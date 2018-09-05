@@ -80,10 +80,10 @@ public class V10verlap {
 		World dimension = event.getWorld();
 		int id = dimension.provider.getDimension();
 		String world = Integer.toString(id);
-		config.getString("upper", world, id == 0 ? "1" : id == -1 ? "0" : "none", null);
-		config.getString("lower", world, id == 0 ? "-1" : id == 1 ? "0" : "none", null);
-		config.getInt("minY", world, 0, Integer.MIN_VALUE, Integer.MAX_VALUE, null);
-		config.getInt("maxY", world, dimension.getHeight(), Integer.MIN_VALUE, Integer.MAX_VALUE, null);
+		config.get(world, "upper", id == 0 ? "1" : id == -1 ? "0" : "none");
+		config.get(world, "lower", id == 0 ? "1" : id == -1 ? "0" : "none");
+		config.get(world, "minY", 0);
+		config.get(world, "maxY", dimension.getHeight());
 		if(config.hasChanged())
 			config.save();
 	}

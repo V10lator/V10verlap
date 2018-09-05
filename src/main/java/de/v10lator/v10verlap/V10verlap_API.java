@@ -51,7 +51,7 @@ public class V10verlap_API
    */
   static public int getMinY(int world)
   {
-	return V10verlap_API.plugin.config.getInt("minY", Integer.toString(world), 0, Integer.MIN_VALUE, Integer.MAX_VALUE, null);
+	  return V10verlap_API.plugin.config.get(Integer.toString(world), "minY", 0).getInt();
   }
   
   /** Returns the maximum Y
@@ -61,7 +61,7 @@ public class V10verlap_API
    */
   static public int getMaxY(int world)
   {
-	  return V10verlap_API.plugin.config.getInt("maxY", Integer.toString(world), 128, Integer.MIN_VALUE, Integer.MAX_VALUE, null);
+	  return V10verlap_API.plugin.config.get(Integer.toString(world), "maxY", 128).getInt();
   }
   
   /** Returns the upper world
@@ -71,7 +71,7 @@ public class V10verlap_API
    */
   static public int getUpperWorld(int world)
   {
-	  String name = V10verlap_API.plugin.config.getString("upper", Integer.toString(world), "none", null);
+	  String name = V10verlap_API.plugin.config.get(Integer.toString(world), "upper", "none").getString();
 	  try {
 		  return Integer.parseInt(name);
 	  }
@@ -88,7 +88,7 @@ public class V10verlap_API
    */
   static public int getLowerWorld(int world)
   {
-	  String name = V10verlap_API.plugin.config.getString("lower", Integer.toString(world), "none", null);
+	  String name =V10verlap_API.plugin.config.get(Integer.toString(world), "lower", "none").getString();
 	  try {
 		  return Integer.parseInt(name);
 	  }
