@@ -81,7 +81,7 @@ public class V10verlap {
 		int id = dimension.provider.getDimension();
 		String world = Integer.toString(id);
 		config.get(world, "upper", id == 0 ? "1" : id == -1 ? "0" : "none");
-		config.get(world, "lower", id == 0 ? "1" : id == -1 ? "0" : "none");
+		config.get(world, "lower", id == 0 ? "-1" : id == 1 ? "0" : "none");
 		config.get(world, "minY", 0);
 		config.get(world, "maxY", dimension.getHeight());
 		if(config.hasChanged())
