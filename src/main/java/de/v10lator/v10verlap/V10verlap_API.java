@@ -21,10 +21,12 @@ package de.v10lator.v10verlap;
 public class V10verlap_API
 {
   private static V10verlap plugin = null;
-  private static final double version = 1.3D;
+  private static V10verlap_API self;
+  private static final double version = 1.4D;
   
   static void init(V10verlap plugin)
   {
+	  self = new V10verlap_API();
 	V10verlap_API.plugin = plugin;
   }
   
@@ -49,8 +51,9 @@ public class V10verlap_API
    * @param world - The world
    * @return int
    */
-  static public int getMinY(int world)
+  static public int getMinY(int world) throws NotLinkedException
   {
+	  V10verlap_API.getLowerWorld(world);
 	  return V10verlap_API.plugin.config.get(Integer.toString(world), "minY", 0).getInt();
   }
   
@@ -59,8 +62,9 @@ public class V10verlap_API
    * @param world - The world
    * @return int
    */
-  static public int getMaxY(int world)
+  static public int getMaxY(int world) throws NotLinkedException
   {
+	  V10verlap_API.getUpperWorld(world);
 	  return V10verlap_API.plugin.config.get(Integer.toString(world), "maxY", 128).getInt();
   }
   
@@ -69,16 +73,18 @@ public class V10verlap_API
    * @param world - The world
    * @return World - The upper world
    */
-  static public int getUpperWorld(int world)
+  static public int getUpperWorld(int world) throws NotLinkedException
   {
 	  String name = V10verlap_API.plugin.config.get(Integer.toString(world), "upper", "none").getString();
+	  if(name.equals("none"))
+		  throw self.new NotLinkedException();
 	  try {
 		  return Integer.parseInt(name);
 	  }
 	  catch(NumberFormatException e)
 	  {
+		  throw self.new NotLinkedException(e);
 	  }
-	  return world;
   }
   
   /** Returns the lower world
@@ -86,16 +92,18 @@ public class V10verlap_API
    * @param world - The world
    * @return World - The upper world
    */
-  static public int getLowerWorld(int world)
+  static public int getLowerWorld(int world) throws NotLinkedException
   {
-	  String name =V10verlap_API.plugin.config.get(Integer.toString(world), "lower", "none").getString();
+	  String name = V10verlap_API.plugin.config.get(Integer.toString(world), "lower", "none").getString();
+	  if(name.equals("none"))
+		  throw self.new NotLinkedException();
 	  try {
 		  return Integer.parseInt(name);
 	  }
 	  catch(NumberFormatException e)
 	  {
+		  throw self.new NotLinkedException(e);
 	  }
-	  return world;
   }
   
   /** Sets the cooldown for an entity to 5 seconds.
@@ -160,4 +168,17 @@ public class V10verlap_API
 	  return false;
 	return plugin.teleport(entity, to, false);
   }*/
+
+  public class NotLinkedException extends RuntimeException
+  {
+	public static final long serialVersionUID = 8175875770576887164L;
+
+	public NotLinkedException() {
+		  super();
+	  }
+	
+	public NotLinkedException(Exception e) {
+		  super(e);
+	  }
+  }
 }

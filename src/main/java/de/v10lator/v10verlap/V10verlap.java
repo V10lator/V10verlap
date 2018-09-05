@@ -144,20 +144,35 @@ public class V10verlap {
 			}
 		}
 		
-		int worldId;
-		int lower, upper, to;
+		int worldId, lower = 0, upper = 0, to, minY = 0, maxY = 0;
 		BlockPos pos;
 		double x, y, z;
 		Entity[] entities;
-		boolean down;
+		boolean down, lowerAvail, upperAvail;
 		NBTTagCompound data;
 		for(WorldServer dimension: DimensionManager.getWorlds())
 		{
 			worldId = dimension.provider.getDimension();
-			lower = V10verlap_API.getLowerWorld(worldId);
-			upper = V10verlap_API.getUpperWorld(worldId);
-			if(lower == worldId && upper == worldId)
-				continue;
+			try
+			{
+				lower = V10verlap_API.getLowerWorld(worldId);
+				minY = V10verlap_API.getMinY(worldId);
+				lowerAvail = true;
+			}
+			catch(V10verlap_API.NotLinkedException e)
+			{
+				lowerAvail = false;
+			}
+			try
+			{
+				upper = V10verlap_API.getUpperWorld(worldId);
+				maxY = V10verlap_API.getMaxY(worldId);
+				upperAvail = true;
+			}
+			catch(V10verlap_API.NotLinkedException e)
+			{
+				upperAvail = false;
+			}
 			
 			entities = new Entity[dimension.loadedEntityList.size()];
 			for(int i = 0; i < entities.length; i++)
@@ -165,7 +180,6 @@ public class V10verlap {
 			
 			for(Entity entity: entities)
 			{
-				// TODO
 				data = entity.getEntityData();
 				if(noFallDamage && data.hasKey(ENTITY_FALL_TAG))
 				{
@@ -175,22 +189,41 @@ public class V10verlap {
 						data.removeTag(ENTITY_FALL_TAG);
 				}
 				
-				if(entity.isRiding() || entity.isDead)
+				if((!lowerAvail && !upperAvail) || entity.isDead || entity.isRiding())
 					continue;
+				
 				x = entity.posX;
 				y = entity.posY;
 				z = entity.posZ;
 				pos = new BlockPos(x, y, z).down();
-				if(lower != worldId && y <= V10verlap_API.getMinY(worldId))
+				if(lowerAvail && y <= minY)
 				{
+					try
+					{
+						y = V10verlap_API.getMaxY(lower) - 1;
+					}
+					catch(V10verlap_API.NotLinkedException e)
+					{
+						LogManager.getLogger("##NAME##").error("Invalid link between DIM" + worldId + " and DIM" + lower + ". Canceling teleport!");
+						lowerAvail = false;
+						continue;
+					}
 					to = lower;
-					y = V10verlap_API.getMaxY(to) - 1;
 					down = true;
 				}
-				else if(upper != worldId && y >= V10verlap_API.getMaxY(worldId))
+				else if(upperAvail && y >= maxY)
 				{
+					try
+					{
+						y = V10verlap_API.getMinY(upper) + 1;
+					}
+					catch(V10verlap_API.NotLinkedException e)
+					{
+						LogManager.getLogger("##NAME##").error("Invalid link between DIM" + worldId + " and DIM" + upper + ". Canceling teleport!");
+						upperAvail = false;
+						continue;
+					}
 					to = upper;
-					y = V10verlap_API.getMinY(to) + 1;
 					down = false;
 				}
 				else
