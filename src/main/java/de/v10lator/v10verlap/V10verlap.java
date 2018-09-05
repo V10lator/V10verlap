@@ -45,8 +45,11 @@ import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent;
+import net.minecraftforge.server.permission.DefaultPermissionLevel;
+import net.minecraftforge.server.permission.PermissionAPI;
 
 @Mod(modid = "##MODID##", name = "##NAME##", version = "##VERSION##", acceptedMinecraftVersions = "1.12.2", serverSideOnly = true, acceptableRemoteVersions = "*", updateJSON="http://forge.home.v10lator.de/update.json?id=##MODID##&v=##VERSION##")
 public class V10verlap {
@@ -55,6 +58,7 @@ public class V10verlap {
 	private final String ENTITY_FALL_TAG = "##MODID##.noFallDamage";
 	private boolean noFallDamage;
 	private int placeClimbBlock;
+	final String permNode = "##MODID##.command";
 	
 	@Mod.EventHandler
     public void onPreInit(FMLPreInitializationEvent event) {
@@ -62,6 +66,12 @@ public class V10verlap {
 		reloadConfig();
 		MinecraftForge.EVENT_BUS.register(this);
 		V10verlap_API.init(this);
+	}
+	
+	@Mod.EventHandler
+	public void start(FMLServerStartingEvent event) {
+		PermissionAPI.registerNode(permNode, DefaultPermissionLevel.OP, "Use the /dimmode command");
+		event.registerServerCommand(new V10verlapCommand(this));
 	}
 	
 	@SubscribeEvent
