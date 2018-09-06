@@ -186,7 +186,7 @@ public class V10verlapCommand extends CommandBase {
 					sender.sendMessage(makeMessage(TextFormatting.RED, "No change!"));
 					return;
 				}
-				prop.set(nv * 20);
+				prop.set(nv);
 				mod.config.save();
 				mod.reloadConfig();
 				sender.sendMessage(makeMessage(TextFormatting.GREEN, nv == 0 ? "Disabled tmp block spawning!" : "Set tmp block live time to " + nv + " seconds!"));

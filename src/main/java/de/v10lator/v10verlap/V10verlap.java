@@ -113,7 +113,7 @@ public class V10verlap {
 	void reloadConfig()
 	{
 		config.load();
-		placeClimbBlock = config.get(Configuration.CATEGORY_GENERAL, "placeClimbBlock", 0).getInt();
+		placeClimbBlock = config.get(Configuration.CATEGORY_GENERAL, "placeClimbBlock", 0).getInt() * 20;
 		noFallDamage = config.get(Configuration.CATEGORY_GENERAL, "noFallDamage", false).getBoolean();
 		relativeToSpawn = config.get(Configuration.CATEGORY_GENERAL, "relativeToSpawn", false).getBoolean();
 		respectNetherScale = config.get(Configuration.CATEGORY_GENERAL, "respectNetherScale", false).getBoolean();
