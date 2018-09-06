@@ -195,7 +195,14 @@ public class V10verlapCommand extends CommandBase {
 			case "nfd":
 				changeBoolConf("noFallDamage", sender, args);
 				return;
-				
+			case "relativeToSpawn":
+			case "rts":
+				changeBoolConf("relativeToSpawn", sender, args);
+				return;
+			case "respectNetherScale":
+			case "rns":
+				changeBoolConf("noFallDamage", sender, args);
+				return;
 			default:
 				sender.sendMessage(makeMessage(TextFormatting.RED, getUsage(sender)));
 				return;
