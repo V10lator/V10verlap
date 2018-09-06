@@ -106,37 +106,6 @@ public class V10verlap_API
 		}
 	}
 
-	/** Teleport an Entity with v10verlaps teleport method.
-	 *  This is a safe method for world to world TPs.
-	 *  This will ignore cooldowns.
-	 * 
-	 * @param entity - The Entity
-	 * @param to - The Location to teleport to.
-	 */
-	/*  public boolean teleport(Entity entity, Location to)
-  {
-	if(entity == null || to == null)
-	  return false;
-	return plugin.teleport(entity, to, false);
-  }*/
-
-	/** Teleport an Entity with v10verlaps teleport method.
-	 *  This is a safe method for world to world TPs.
-	 *  This will check for (but not set) cooldowns.
-	 * 
-	 * @param entity - The Entity
-	 * @param to - The Location to teleport to.
-	 * @param cooldown - Check for cooldown?
-	 */
-	/*  public boolean teleport(Entity entity, Location to, boolean cooldown)
-  {
-	if(entity == null || to == null)
-	  return false;
-	if(cooldown && plugin.cooldown.contains(entity.getUniqueID()))
-	  return false;
-	return plugin.teleport(entity, to, false);
-  }*/
-
 	public class NotLinkedException extends RuntimeException
 	{
 		public static final long serialVersionUID = 8175875770576887164L;
