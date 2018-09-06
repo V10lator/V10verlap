@@ -30,6 +30,12 @@ public class V10verlap_API
 		V10verlap_API.plugin = plugin;
 	}
 
+	/** Returns if the API is ready to use.
+	 *  Call this before any other call to the API and don't do
+	 *  anything if it returns false!
+	 * 
+	 * @return boolean
+	 */
 	static public boolean isReady()
 	{
 		return V10verlap_API.plugin != null;
@@ -106,15 +112,23 @@ public class V10verlap_API
 		}
 	}
 
-	public class NotLinkedException extends RuntimeException
+	/**
+	 * The class {@code NotLinkedException} are a form of
+	 * {@code Exception} which gets thrown in case an API
+	 * function is called with for worlds which aren't connected.
+	 *
+	 * @author  Thomas "V10lator" Rohloff
+	 * @since   1.4
+	 */
+	public class NotLinkedException extends Exception
 	{
-		public static final long serialVersionUID = 8175875770576887164L;
+		static final long serialVersionUID = 8175875770576887164L;
 
-		public NotLinkedException() {
+		NotLinkedException() {
 			super();
 		}
 
-		public NotLinkedException(Exception e) {
+		NotLinkedException(Exception e) {
 			super(e);
 		}
 	}
