@@ -191,15 +191,15 @@ public class V10verlapCommand extends CommandBase {
 				mod.reloadConfig();
 				sender.sendMessage(makeMessage(TextFormatting.GREEN, nv == 0 ? "Disabled tmp block spawning!" : "Set tmp block live time to " + nv + " seconds!"));
 				return;
-			case "noFallDamage":
+			case "nofalldamage":
 			case "nfd":
 				changeBoolConf("noFallDamage", sender, args);
 				return;
-			case "relativeToSpawn":
+			case "relativetospawn":
 			case "rts":
 				changeBoolConf("relativeToSpawn", sender, args);
 				return;
-			case "respectNetherScale":
+			case "respectnetherscale":
 			case "rns":
 				changeBoolConf("noFallDamage", sender, args);
 				return;
