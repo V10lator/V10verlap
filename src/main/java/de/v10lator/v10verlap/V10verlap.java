@@ -56,7 +56,7 @@ public class V10verlap {
 	private final HashMap<V10verlapBlock, Integer> blocks = new HashMap<V10verlapBlock, Integer>();
 	Configuration config;
 	private final String ENTITY_FALL_TAG = "##MODID##.noFallDamage";
-	private boolean noFallDamage;
+	private boolean noFallDamage, relativeToSpawn;
 	private int placeClimbBlock;
 	final String permNode = "##MODID##.command";
 	
@@ -114,6 +114,7 @@ public class V10verlap {
 		config.load();
 		placeClimbBlock = config.getInt("placeClimbBlock", Configuration.CATEGORY_GENERAL, 0, 0, 6000, "Place a temporary block when a player climbs up a world");
 		noFallDamage = config.getBoolean("noFallDamage", Configuration.CATEGORY_GENERAL, false, "Don't apply fall damage when falling from one dimension to another");
+		relativeToSpawn = config.getBoolean("relativeToSpawn", Configuration.CATEGORY_GENERAL, false, "Overlap worlds relative to spawn points");
 		if(config.hasChanged())
 			config.save();
 	}
@@ -145,7 +146,7 @@ public class V10verlap {
 		}
 		
 		int worldId, lower = 0, upper = 0, to, minY = 0, maxY = 0;
-		BlockPos pos;
+		BlockPos pos, oldWorldSpawnPos, newWorldSpawnPos;
 		double x, y, z;
 		Entity[] entities;
 		boolean down, lowerAvail, upperAvail;
@@ -177,6 +178,8 @@ public class V10verlap {
 			entities = new Entity[dimension.loadedEntityList.size()];
 			for(int i = 0; i < entities.length; i++)
 				entities[i] = dimension.loadedEntityList.get(i);
+			
+			oldWorldSpawnPos = dimension.getSpawnPoint();
 			
 			for(Entity entity: entities)
 			{
@@ -228,7 +231,6 @@ public class V10verlap {
 				}
 				else
 					continue;
-				
 				if (!ForgeHooks.onTravelToDimension(entity, to))
 				{
 					LogManager.getLogger("##NAME##").info("Another plugin blocked the teleport from DIM" + worldId + " to DIM" + to);
@@ -238,6 +240,15 @@ public class V10verlap {
 				WorldServer ws = ms.getWorld(to);
 				if(ws == null)
 					continue;
+				
+				if(relativeToSpawn)
+				{
+					newWorldSpawnPos = ws.getSpawnPoint();
+					x -= oldWorldSpawnPos.getX();
+					x += newWorldSpawnPos.getX();
+					z -= oldWorldSpawnPos.getZ();
+					z += oldWorldSpawnPos.getZ();
+				}
 				
 				if(down && noFallDamage)
 					entity.getEntityData().setBoolean(ENTITY_FALL_TAG, false);
