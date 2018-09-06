@@ -201,7 +201,7 @@ public class V10verlapCommand extends CommandBase {
 				return;
 			case "respectnetherscale":
 			case "rns":
-				changeBoolConf("noFallDamage", sender, args);
+				changeBoolConf("respectnetherscale", sender, args);
 				return;
 			default:
 				sender.sendMessage(makeMessage(TextFormatting.RED, getUsage(sender)));
