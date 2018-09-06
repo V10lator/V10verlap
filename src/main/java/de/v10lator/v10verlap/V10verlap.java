@@ -110,13 +110,13 @@ public class V10verlap {
 		data.removeTag(ENTITY_FALL_TAG);
 	}
 	
-	private void reloadConfig()
+	void reloadConfig()
 	{
 		config.load();
-		placeClimbBlock = config.getInt("placeClimbBlock", Configuration.CATEGORY_GENERAL, 0, 0, 6000, "Place a temporary block when a player climbs up a world");
-		noFallDamage = config.getBoolean("noFallDamage", Configuration.CATEGORY_GENERAL, false, "Don't apply fall damage when falling from one dimension to another");
-		relativeToSpawn = config.getBoolean("relativeToSpawn", Configuration.CATEGORY_GENERAL, false, "Overlap worlds relative to spawn points");
-		respectNetherScale = config.getBoolean("respectNetherScale", Configuration.CATEGORY_GENERAL, false, "Respect the Nethers 8x scale");
+		placeClimbBlock = config.get(Configuration.CATEGORY_GENERAL, "placeClimbBlock", 0).getInt();
+		noFallDamage = config.get(Configuration.CATEGORY_GENERAL, "noFallDamage", false).getBoolean();
+		relativeToSpawn = config.get(Configuration.CATEGORY_GENERAL, "relativeToSpawn", false).getBoolean();
+		respectNetherScale = config.get(Configuration.CATEGORY_GENERAL, "respectNetherScale", false).getBoolean();
 		if(config.hasChanged())
 			config.save();
 	}

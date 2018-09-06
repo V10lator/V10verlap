@@ -25,6 +25,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 import net.minecraftforge.server.permission.PermissionAPI;
 
@@ -51,11 +52,32 @@ public class V10verlapCommand extends CommandBase {
 		return sender instanceof EntityPlayer ? PermissionAPI.hasPermission((EntityPlayer) sender, mod.permNode) : true;
 	}
 	
+	private void changeBoolConf(String key, ICommandSender sender, String[] args)
+	{
+		if(args.length != 2)
+		{
+			sender.sendMessage(makeMessage(TextFormatting.RED, "/v10verlap " + key + " <true|false>"));
+			return;
+		}
+		boolean nv = Boolean.parseBoolean(args[1]);
+		Property prop = mod.config.get(Configuration.CATEGORY_GENERAL, key, false);
+		boolean value = prop.getBoolean();
+		if(value == nv)
+		{
+			sender.sendMessage(makeMessage(TextFormatting.RED, "No change!"));
+			return;
+		}
+		prop.set(nv);
+		mod.config.save();
+		mod.reloadConfig();
+		sender.sendMessage(makeMessage(TextFormatting.GREEN, "Set " + key + " to " + nv + "!"));
+	}
+	
 	private void link(MinecraftServer server, ICommandSender sender, String[] args)
 	{
 		if(args.length != 5)
 		{
-			sender.sendMessage(makeMessage(TextFormatting.RED, "/v10verlap link <upperDimension)> <lowerDimension> <maxHeight> <minHeight>"));
+			sender.sendMessage(makeMessage(TextFormatting.RED, "/v10verlap link <upperDimension> <lowerDimension> <maxHeight> <minHeight>"));
 			return;
 		}
 		args[1] = args[1].toUpperCase();
@@ -132,6 +154,7 @@ public class V10verlapCommand extends CommandBase {
 			sender.sendMessage(makeMessage(TextFormatting.RED, getUsage(sender)));
 			return;
 		}
+		args[0] = args[0].toLowerCase();
 		switch(args[0])
 		{
 			case "link":
@@ -139,6 +162,40 @@ public class V10verlapCommand extends CommandBase {
 				return;
 			case "unlink":
 				break;
+			case "placeclimbblock":
+			case "pcb":
+				if(args.length != 2)
+				{
+					sender.sendMessage(makeMessage(TextFormatting.RED, "/v10verlap placeClimbBlocks <timeInSeconds>"));
+					return;
+				}
+				int nv;
+				try
+				{
+					nv = Integer.parseInt((args[1]));
+				}
+				catch(NumberFormatException e)
+				{
+					sender.sendMessage(makeMessage(TextFormatting.RED, "Invalid seconds: " + args[1]));
+					return;
+				}
+				Property prop = mod.config.get(Configuration.CATEGORY_GENERAL, "placeClimbBlock", 0);
+				int value = prop.getInt();
+				if(value == nv)
+				{
+					sender.sendMessage(makeMessage(TextFormatting.RED, "No change!"));
+					return;
+				}
+				prop.set(nv * 20);
+				mod.config.save();
+				mod.reloadConfig();
+				sender.sendMessage(makeMessage(TextFormatting.GREEN, nv == 0 ? "Disabled tmp block spawning!" : "Set tmp block live time to " + nv + " seconds!"));
+				return;
+			case "noFallDamage":
+			case "nfd":
+				changeBoolConf("noFallDamage", sender, args);
+				return;
+				
 			default:
 				sender.sendMessage(makeMessage(TextFormatting.RED, getUsage(sender)));
 				return;
@@ -146,7 +203,7 @@ public class V10verlapCommand extends CommandBase {
 		
 		if(args.length != 3)
 		{
-			sender.sendMessage(makeMessage(TextFormatting.RED, "/v10verlap unlink <dimension 1)> <dimension 2>"));
+			sender.sendMessage(makeMessage(TextFormatting.RED, "/v10verlap unlink <dimension 1> <dimension 2>"));
 			return;
 		}
 		
