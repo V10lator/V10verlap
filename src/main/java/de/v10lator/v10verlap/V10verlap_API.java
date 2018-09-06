@@ -106,38 +106,6 @@ public class V10verlap_API
 		}
 	}
 
-	/** Sets the cooldown for an entity to 5 seconds.
-	 * 
-	 * @param entity - The Entity
-	 */
-	/*  public void addCooldown(Entity entity)
-  {
-	addCooldown(entity, 100);
-  }*/
-
-	/** Sets the cooldown for an entity.
-	 * 
-	 * @param entity - The Entity
-	 * @param ticks - The cooldown in ticks
-	 */
-	/*  public void addCooldown(Entity entity, int ticks)
-  {
-	if(entity == null)
-	  return;
-	plugin.cooldown.put(entity.getUniqueID(), ticks);
-  }*/
-
-	/** Returns if an entity has a cooldown.
-	 * 
-	 * @param entity - The Entity
-	 */
-	/*  public boolean hasCooldown(Entity entity)
-  {
-	if(entity == null)
-	  return false;
-	return plugin.cooldown.containsKey(entity.getUniqueID());
-  }*/
-
 	/** Teleport an Entity with v10verlaps teleport method.
 	 *  This is a safe method for world to world TPs.
 	 *  This will ignore cooldowns.
