@@ -33,6 +33,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
@@ -56,7 +57,7 @@ public class V10verlap {
 	private final HashMap<V10verlapBlock, Integer> blocks = new HashMap<V10verlapBlock, Integer>();
 	Configuration config;
 	private final String ENTITY_FALL_TAG = "##MODID##.noFallDamage";
-	private boolean noFallDamage, relativeToSpawn;
+	private boolean noFallDamage, relativeToSpawn, respectNetherScale;
 	private int placeClimbBlock;
 	final String permNode = "##MODID##.command";
 	
@@ -115,6 +116,7 @@ public class V10verlap {
 		placeClimbBlock = config.getInt("placeClimbBlock", Configuration.CATEGORY_GENERAL, 0, 0, 6000, "Place a temporary block when a player climbs up a world");
 		noFallDamage = config.getBoolean("noFallDamage", Configuration.CATEGORY_GENERAL, false, "Don't apply fall damage when falling from one dimension to another");
 		relativeToSpawn = config.getBoolean("relativeToSpawn", Configuration.CATEGORY_GENERAL, false, "Overlap worlds relative to spawn points");
+		respectNetherScale = config.getBoolean("respectNetherScale", Configuration.CATEGORY_GENERAL, false, "Respect the Nethers 8x scale");
 		if(config.hasChanged())
 			config.save();
 	}
@@ -151,6 +153,7 @@ public class V10verlap {
 		Entity[] entities;
 		boolean down, lowerAvail, upperAvail;
 		NBTTagCompound data;
+		DimensionType typeFrom, typeTo;
 		for(WorldServer dimension: DimensionManager.getWorlds())
 		{
 			worldId = dimension.provider.getDimension();
@@ -180,6 +183,7 @@ public class V10verlap {
 				entities[i] = dimension.loadedEntityList.get(i);
 			
 			oldWorldSpawnPos = dimension.getSpawnPoint();
+			typeFrom = dimension.provider.getDimensionType();
 			
 			for(Entity entity: entities)
 			{
@@ -246,6 +250,24 @@ public class V10verlap {
 					else
 						upperAvail = false;
 					continue;
+				}
+				
+				if(respectNetherScale)
+				{
+					typeTo = ws.provider.getDimensionType();
+					if(typeTo != typeFrom)
+					{
+						if(typeTo == DimensionType.NETHER)
+						{
+							x /= 8.0D;
+							z /= 8.0D;
+						}
+						else if(typeFrom == DimensionType.NETHER)
+						{
+							x *= 8.0D;
+							z *= 8.0D;
+						}
+					}
 				}
 				
 				if(relativeToSpawn)
