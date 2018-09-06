@@ -271,9 +271,8 @@ public class V10verlap {
 				}
 				else
 				{
-					WorldServer ows = ms.getWorld(worldId);
-					ows.getEntityTracker().untrack(entity);
-				    ows.removeEntityDangerously(entity);
+					dimension.getEntityTracker().untrack(entity);
+					dimension.removeEntityDangerously(entity);
 				    
 				    entity.isDead = false;
 				    entity.world = ws;
