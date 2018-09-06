@@ -239,7 +239,14 @@ public class V10verlap {
 				
 				WorldServer ws = ms.getWorld(to);
 				if(ws == null)
+				{
+					LogManager.getLogger("##NAME##").info("Can't load DIM" + to);
+					if(down)
+						lowerAvail = false;
+					else
+						upperAvail = false;
 					continue;
+				}
 				
 				if(relativeToSpawn)
 				{
