@@ -21,6 +21,7 @@ package de.v10lator.v10verlap;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
 
 import org.apache.logging.log4j.LogManager;
@@ -235,6 +236,7 @@ public class V10verlap {
 				}
 				else
 					continue;
+				
 				if (!ForgeHooks.onTravelToDimension(entity, to))
 				{
 					LogManager.getLogger("##NAME##").info("Another plugin blocked the teleport from DIM" + worldId + " to DIM" + to);
@@ -282,37 +284,52 @@ public class V10verlap {
 				if(down && noFallDamage)
 					entity.getEntityData().setBoolean(ENTITY_FALL_TAG, false);
 				
-				if(entity instanceof EntityPlayerMP)
+				if(!down && placeClimbBlock > 0 && entity instanceof EntityPlayerMP)
 				{
-					if(!down)
+					pos = new BlockPos(x, y, z).down();
+					if(ws.isAirBlock(pos))
 					{
-						if(placeClimbBlock > 0)
-						{
-							pos = new BlockPos(x, y, z).down();
-							if(ws.isAirBlock(pos))
-							{
-								ws.setBlockState(pos, Blocks.GLASS.getDefaultState());
-								blocks.put(new V10verlapBlock(to, pos), placeClimbBlock);
-							}
-						}
+						ws.setBlockState(pos, Blocks.GLASS.getDefaultState());
+						blocks.put(new V10verlapBlock(to, pos), placeClimbBlock);
 					}
-					ms.getPlayerList().transferPlayerToDimension((EntityPlayerMP)entity, to, new V10verlapTeleporter(ws, x, y, z));
 				}
-				else
-				{
-					dimension.getEntityTracker().untrack(entity);
-					dimension.removeEntityDangerously(entity);
-				    
-				    entity.isDead = false;
-				    entity.world = ws;
-				    entity.dimension = to;
-				    entity.setPosition(x, y, z);
-				    
-				    ws.getChunkFromChunkCoords(pos.getX() >> 4, pos.getZ() >> 4).addEntity(entity);
-		            ws.loadedEntityList.add(entity);
-		            ws.onEntityAdded(entity);
-				}
+				
+				this.teleport(entity, ms, dimension, ws, x, y, z);
 			}
 		}
+	}
+	
+	private void teleport(Entity entity, MinecraftServer ms, WorldServer from, WorldServer to, double x, double y, double z)
+	{
+		List<Entity> passengers = entity.getPassengers();
+		if(!passengers.isEmpty())
+		{
+			for(Entity passenger: passengers)
+			{
+				passenger.dismountRidingEntity();
+				teleport(passenger, ms, from, to, x, y, z);
+			}
+		}
+		
+		if(entity instanceof EntityPlayerMP)
+			ms.getPlayerList().transferPlayerToDimension((EntityPlayerMP)entity, to.provider.getDimension(), new V10verlapTeleporter(to, x, y, z));
+		else
+		{
+			from.getEntityTracker().untrack(entity);
+			from.removeEntityDangerously(entity);
+		    
+		    entity.isDead = false;
+		    entity.world = to;
+		    entity.dimension = to.provider.getDimension();
+		    entity.setPosition(x, y, z);
+		    
+		    to.getChunkFromChunkCoords(((int)Math.floor(x)) >> 4, ((int)Math.floor(z)) >> 4).addEntity(entity);
+            to.loadedEntityList.add(entity);
+            to.onEntityAdded(entity);
+		}
+		
+		if(!passengers.isEmpty())
+			for(Entity passenger: passengers)
+				passenger.startRiding(entity, true);
 	}
 }
