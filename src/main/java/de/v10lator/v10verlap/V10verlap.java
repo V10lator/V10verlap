@@ -48,6 +48,7 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent;
 import net.minecraftforge.server.permission.DefaultPermissionLevel;
@@ -71,9 +72,17 @@ public class V10verlap {
 	}
 	
 	@Mod.EventHandler
-	public void start(FMLServerStartingEvent event) {
+	public void onServerStart(FMLServerStartingEvent event) {
 		PermissionAPI.registerNode(permNode, DefaultPermissionLevel.OP, "Use the /dimmode command");
 		event.registerServerCommand(new V10verlapCommand(this));
+	}
+	
+	@Mod.EventHandler
+	public void onServerStop(FMLServerStoppingEvent event) {
+		MinecraftServer ms = FMLCommonHandler.instance().getMinecraftServerInstance();
+		for(V10verlapBlock block: blocks.keySet())
+			resetBlock(ms, block);
+		blocks.clear();
 	}
 	
 	@SubscribeEvent
@@ -129,18 +138,13 @@ public class V10verlap {
 		{
 			Entry<V10verlapBlock, Integer> entry;
 			int c;
-			V10verlapBlock block;
-			WorldServer ws;
 			for(Iterator<Entry<V10verlapBlock, Integer>> iter = blocks.entrySet().iterator(); iter.hasNext();)
 			{
 				entry = iter.next();
 				c = entry.getValue() - 1;
 				if(c < 0)
 				{
-					block = entry.getKey();
-					ws = ms.getWorld(block.dim);
-					if(ws.getBlockState(block.pos).getMaterial() == Material.GLASS)
-						ws.setBlockState(block.pos, Blocks.AIR.getDefaultState());
+					resetBlock(ms, entry.getKey());
 					iter.remove();
 				}
 				else
@@ -297,6 +301,13 @@ public class V10verlap {
 				this.teleport(entity, ms, dimension, ws, x, y, z);
 			}
 		}
+	}
+	
+	private void resetBlock(MinecraftServer ms, V10verlapBlock block)
+	{
+		WorldServer ws = ms.getWorld(block.dim);
+		if(ws.getBlockState(block.pos).getMaterial() == Material.GLASS)
+			ws.setBlockState(block.pos, Blocks.AIR.getDefaultState());
 	}
 	
 	private void teleport(Entity entity, MinecraftServer ms, WorldServer from, WorldServer to, double x, double y, double z)
