@@ -59,7 +59,8 @@ public class V10verlap {
 	private final HashMap<V10verlapBlock, Integer> blocks = new HashMap<V10verlapBlock, Integer>();
 	Configuration config;
 	private final String ENTITY_FALL_TAG = "##MODID##.noFallDamage";
-	private boolean noFallDamage, relativeToSpawn, respectNetherScale;
+	private boolean noFallDamage, relativeToSpawn;
+	boolean respectNetherScale;
 	private int placeClimbBlock;
 	final String permNode = "##MODID##.command";
 	
@@ -153,8 +154,8 @@ public class V10verlap {
 		}
 		
 		int worldId, lower = 0, upper = 0, to, minY = 0, maxY = 0;
-		BlockPos pos, oldWorldSpawnPos, newWorldSpawnPos;
-		double x, y, z;
+		BlockPos pos, oldWorldSpawnPos, newWorldSpawnPos = null;
+		double x, y, z, oldScale = 0.0D, newScale = 0.0D;
 		Entity[] entities;
 		boolean down, lowerAvail, upperAvail;
 		NBTTagCompound data;
@@ -189,6 +190,14 @@ public class V10verlap {
 			
 			oldWorldSpawnPos = dimension.getSpawnPoint();
 			typeFrom = dimension.provider.getDimensionType();
+			try
+			{
+				oldScale = V10verlap_API.getScale(worldId);
+			}
+			catch(V10verlap_API.NotLinkedException e)
+			{
+				// Do nothing as we won't teleport anyway (lowerAvail and upperAvail are false)
+			}
 			
 			for(Entity entity: entities)
 			{
@@ -258,31 +267,41 @@ public class V10verlap {
 					continue;
 				}
 				
-				if(respectNetherScale)
+				
+				try
 				{
-					typeTo = ws.provider.getDimensionType();
-					if(typeTo != typeFrom)
-					{
-						if(typeTo == DimensionType.NETHER)
-						{
-							x /= 8.0D;
-							z /= 8.0D;
-						}
-						else if(typeFrom == DimensionType.NETHER)
-						{
-							x *= 8.0D;
-							z *= 8.0D;
-						}
-					}
+					newScale = V10verlap_API.getScale(to);
+				}
+				catch(V10verlap_API.NotLinkedException e)
+				{
+					// This should never be called
 				}
 				
 				if(relativeToSpawn)
 				{
 					newWorldSpawnPos = ws.getSpawnPoint();
 					x -= oldWorldSpawnPos.getX();
-					x += newWorldSpawnPos.getX();
 					z -= oldWorldSpawnPos.getZ();
-					z += oldWorldSpawnPos.getZ();
+				}
+				
+				if(oldScale != newScale)
+				{
+					if(oldScale != 1.0D)
+					{
+						x *= oldScale;
+						z *= oldScale;
+					}
+					if(newScale != 1.0D)
+					{
+						x /= oldScale;
+						z /= newScale;
+					}
+				}
+				
+				if(relativeToSpawn)
+				{
+					x += newWorldSpawnPos.getX();
+					z += newWorldSpawnPos.getZ();
 				}
 				
 				if(down && noFallDamage)

@@ -18,6 +18,9 @@
 
 package de.v10lator.v10verlap;
 
+import net.minecraft.world.DimensionType;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+
 public class V10verlap_API
 {
 	private static V10verlap plugin = null;
@@ -76,14 +79,19 @@ public class V10verlap_API
 	
 	/** Returns the upper world
 	 * 
-	 * @param world - The world
-	 * @return World - The upper world
+	 * @param world - The world id
+	 * @return World - The upper world id
 	 */
 	public static int getUpperWorld(int world) throws NotLinkedException
 	{
 		return V10verlap_API.getUpperWorld(Integer.toString(world));
 	}
 	
+	/** Returns the upper world
+	 * 
+	 * @param world - The world name
+	 * @return World - The upper world id
+	 */
 	public static int getUpperWorld(String worldName) throws NotLinkedException
 	{
 		if(!V10verlap_API.plugin.config.hasCategory(worldName))
@@ -103,14 +111,19 @@ public class V10verlap_API
 
 	/** Returns the lower world
 	 * 
-	 * @param world - The world
-	 * @return World - The upper world
+	 * @param world - The world id
+	 * @return World - The lower world id
 	 */
 	public static int getLowerWorld(int world) throws NotLinkedException
 	{
 		return V10verlap_API.getLowerWorld(Integer.toString(world));
 	}
 	
+	/** Returns the lower world
+	 * 
+	 * @param world - The world name
+	 * @return World - The lower world id
+	 */
 	public static int getLowerWorld(String worldName) throws NotLinkedException
 	{
 		if(!V10verlap_API.plugin.config.hasCategory(worldName))
@@ -126,6 +139,21 @@ public class V10verlap_API
 		{
 			throw self.new NotLinkedException(e);
 		}
+	}
+	
+	/** Returns the world scale. This is per default 1.0D, 8.0D if respectNetherScale is activated and the world is a END world or some custom value setted in the config
+	 * 
+	 * @param world - The world id
+	 * @return World - The scale
+	 */
+	public static double getScale(int world) throws NotLinkedException
+	{
+		String worldName = Integer.toString(world);
+		if(!V10verlap_API.plugin.config.hasCategory(worldName))
+			throw self.new NotLinkedException();
+		
+		return V10verlap_API.plugin.config.hasKey(worldName, "scale") ? V10verlap_API.plugin.config.get(worldName, "scale", 1.0D).getDouble() : 
+			plugin.respectNetherScale && FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(world).provider.getDimensionType() == DimensionType.THE_END ? 8.0D : 1.0D;
 	}
 	
 	/**
