@@ -36,7 +36,7 @@ public class V10verlap_API
 	 * 
 	 * @return boolean
 	 */
-	static public boolean isReady()
+	public static boolean isReady()
 	{
 		return V10verlap_API.plugin != null;
 	}
@@ -47,7 +47,7 @@ public class V10verlap_API
 	 * 
 	 * @return double
 	 */
-	static public double getVersion()
+	public static double getVersion()
 	{
 		return V10verlap_API.version;
 	}
@@ -57,7 +57,7 @@ public class V10verlap_API
 	 * @param world - The world
 	 * @return int
 	 */
-	static public int getMinY(int world) throws NotLinkedException
+	public static int getMinY(int world) throws NotLinkedException
 	{
 		V10verlap_API.getLowerWorld(world);
 		return V10verlap_API.plugin.config.get(Integer.toString(world), "minY", 0).getInt();
@@ -68,7 +68,7 @@ public class V10verlap_API
 	 * @param world - The world
 	 * @return int
 	 */
-	static public int getMaxY(int world) throws NotLinkedException
+	public static int getMaxY(int world) throws NotLinkedException
 	{
 		V10verlap_API.getUpperWorld(world);
 		return V10verlap_API.plugin.config.get(Integer.toString(world), "maxY", 128).getInt();
@@ -79,7 +79,7 @@ public class V10verlap_API
 	 * @param world - The world
 	 * @return World - The upper world
 	 */
-	static public int getUpperWorld(int world) throws NotLinkedException
+	public static int getUpperWorld(int world) throws NotLinkedException
 	{
 		String name = V10verlap_API.plugin.config.get(Integer.toString(world), "upper", "none").getString();
 		if(name.equals("none"))
@@ -98,7 +98,7 @@ public class V10verlap_API
 	 * @param world - The world
 	 * @return World - The upper world
 	 */
-	static public int getLowerWorld(int world) throws NotLinkedException
+	public static int getLowerWorld(int world) throws NotLinkedException
 	{
 		String name = V10verlap_API.plugin.config.get(Integer.toString(world), "lower", "none").getString();
 		if(name.equals("none"))
@@ -111,7 +111,7 @@ public class V10verlap_API
 			throw self.new NotLinkedException(e);
 		}
 	}
-
+	
 	/**
 	 * The class {@code NotLinkedException} are a form of
 	 * {@code Exception} which gets thrown in case an API
