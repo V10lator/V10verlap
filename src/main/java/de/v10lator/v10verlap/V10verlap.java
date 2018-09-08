@@ -34,7 +34,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
@@ -267,16 +266,10 @@ public class V10verlap {
 				newScale = V10verlap_API.getScale(to);
 				if(oldScale != newScale)
 				{
-					if(oldScale != 1.0D)
-					{
-						x *= oldScale;
-						z *= oldScale;
-					}
-					if(newScale != 1.0D)
-					{
-						x /= oldScale;
-						z /= newScale;
-					}
+					x *= oldScale;
+					z *= oldScale;
+					x /= newScale;
+					z /= newScale;
 				}
 				
 				if(relativeToSpawn)

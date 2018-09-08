@@ -153,7 +153,7 @@ public class V10verlap_API
 			throw self.new NotLinkedException();
 		
 		return V10verlap_API.plugin.config.hasKey(worldName, "scale") ? V10verlap_API.plugin.config.get(worldName, "scale", 1.0D).getDouble() : 
-			plugin.respectNetherScale && FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(world).provider.getDimensionType() == DimensionType.THE_END ? 8.0D : 1.0D;
+			plugin.respectNetherScale && FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(world).provider.getDimensionType() == DimensionType.NETHER ? 8.0D : 1.0D;
 	}
 	
 	/**
