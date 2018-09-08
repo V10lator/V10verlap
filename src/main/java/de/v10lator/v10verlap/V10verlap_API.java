@@ -73,7 +73,7 @@ public class V10verlap_API
 		V10verlap_API.getUpperWorld(world);
 		return V10verlap_API.plugin.config.get(Integer.toString(world), "maxY", 128).getInt();
 	}
-
+	
 	/** Returns the upper world
 	 * 
 	 * @param world - The world
@@ -81,10 +81,18 @@ public class V10verlap_API
 	 */
 	public static int getUpperWorld(int world) throws NotLinkedException
 	{
-		String name = V10verlap_API.plugin.config.get(Integer.toString(world), "upper", "none").getString();
+		return V10verlap_API.getUpperWorld(Integer.toString(world));
+	}
+	
+	public static int getUpperWorld(String worldName) throws NotLinkedException
+	{
+		if(!V10verlap_API.plugin.config.hasCategory(worldName))
+			throw self.new NotLinkedException();
+		String name = V10verlap_API.plugin.config.get(worldName, "upper", "none").getString();
 		if(name.equals("none"))
 			throw self.new NotLinkedException();
-		try {
+		try
+		{
 			return Integer.parseInt(name);
 		}
 		catch(NumberFormatException e)
@@ -100,10 +108,18 @@ public class V10verlap_API
 	 */
 	public static int getLowerWorld(int world) throws NotLinkedException
 	{
-		String name = V10verlap_API.plugin.config.get(Integer.toString(world), "lower", "none").getString();
+		return V10verlap_API.getLowerWorld(Integer.toString(world));
+	}
+	
+	public static int getLowerWorld(String worldName) throws NotLinkedException
+	{
+		if(!V10verlap_API.plugin.config.hasCategory(worldName))
+			throw self.new NotLinkedException();
+		String name = V10verlap_API.plugin.config.get(worldName, "lower", "none").getString();
 		if(name.equals("none"))
 			throw self.new NotLinkedException();
-		try {
+		try
+		{
 			return Integer.parseInt(name);
 		}
 		catch(NumberFormatException e)
