@@ -155,11 +155,10 @@ public class V10verlap {
 		
 		int worldId, lower = 0, upper = 0, to, minY = 0, maxY = 0;
 		BlockPos pos, oldWorldSpawnPos, newWorldSpawnPos = null;
-		double x, y, z, oldScale = 0.0D, newScale = 0.0D;
+		double x, y, z, oldScale, newScale;
 		Entity[] entities;
 		boolean down, lowerAvail, upperAvail;
 		NBTTagCompound data;
-		DimensionType typeFrom, typeTo;
 		for(WorldServer dimension: DimensionManager.getWorlds())
 		{
 			worldId = dimension.provider.getDimension();
@@ -189,16 +188,7 @@ public class V10verlap {
 				entities[i] = dimension.loadedEntityList.get(i);
 			
 			oldWorldSpawnPos = dimension.getSpawnPoint();
-			typeFrom = dimension.provider.getDimensionType();
-			try
-			{
-				oldScale = V10verlap_API.getScale(worldId);
-			}
-			catch(V10verlap_API.NotLinkedException e)
-			{
-				// Do nothing as we won't teleport anyway (lowerAvail and upperAvail are false)
-			}
-			
+			oldScale = V10verlap_API.getScale(worldId);
 			for(Entity entity: entities)
 			{
 				data = entity.getEntityData();
@@ -267,16 +257,6 @@ public class V10verlap {
 					continue;
 				}
 				
-				
-				try
-				{
-					newScale = V10verlap_API.getScale(to);
-				}
-				catch(V10verlap_API.NotLinkedException e)
-				{
-					// This should never be called
-				}
-				
 				if(relativeToSpawn)
 				{
 					newWorldSpawnPos = ws.getSpawnPoint();
@@ -284,6 +264,7 @@ public class V10verlap {
 					z -= oldWorldSpawnPos.getZ();
 				}
 				
+				newScale = V10verlap_API.getScale(to);
 				if(oldScale != newScale)
 				{
 					if(oldScale != 1.0D)

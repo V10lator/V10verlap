@@ -164,7 +164,7 @@ public class V10verlap_API
 	 * @author  Thomas "V10lator" Rohloff
 	 * @since   1.4
 	 */
-	public class NotLinkedException extends Exception
+	public class NotLinkedException extends RuntimeException
 	{
 		static final long serialVersionUID = 8175875770576887164L;
 
