@@ -18,30 +18,28 @@
 
 package de.v10lator.v10verlap;
 
-import net.minecraft.world.DimensionType;
-import net.minecraftforge.fml.common.FMLCommonHandler;
+import de.v10lator.v10verlap.api.Hooks;
 
+/**
+ * @author V10lator
+ * @deprecated Use de.v10lator.v10verlap.api.Hooks
+ */
+@Deprecated
 public class V10verlap_API
 {
-	private static V10verlap plugin = null;
-	private static V10verlap_API self;
-	private static final double version = 1.4D;
-
-	static void init(V10verlap plugin)
-	{
-		self = new V10verlap_API();
-		V10verlap_API.plugin = plugin;
-	}
-
+	private static final V10verlap_API self = new V10verlap_API();
+	
 	/** Returns if the API is ready to use.
 	 *  Call this before any other call to the API and don't do
 	 *  anything if it returns false!
 	 * 
 	 * @return boolean
+	 * @deprecated Use de.v10lator.v10verlap.api.Hooks.isReady()
 	 */
+	@Deprecated
 	public static boolean isReady()
 	{
-		return V10verlap_API.plugin != null;
+		return Hooks.isReady();
 	}
 
 	/** Returns the APIs version as a double.
@@ -49,61 +47,85 @@ public class V10verlap_API
 	 *  the second will change whenever there are new things.
 	 * 
 	 * @return double
+	 * @deprecated Use de.v10lator.v10verlap.api.Hooks.getVersion()
 	 */
+	@Deprecated
 	public static double getVersion()
 	{
-		return V10verlap_API.version;
+		return Hooks.getVersion();
 	}
 
 	/** Returns the minimum Y
 	 * 
 	 * @param world - The world
 	 * @return int
+	 * @deprecated Use de.v10lator.v10verlap.api.Hooks.getMinY(int)
 	 */
+	@Deprecated
 	public static int getMinY(int world) throws NotLinkedException
 	{
-		V10verlap_API.getLowerWorld(world);
-		return V10verlap_API.plugin.config.get(Integer.toString(world), "minY", 0).getInt();
+		try
+		{
+			return Hooks.getMinY(world);
+		}
+		catch(de.v10lator.v10verlap.api.V10verlapException e)
+		{
+			throw self.new NotLinkedException(e);
+		}
 	}
 
 	/** Returns the maximum Y
 	 * 
 	 * @param world - The world
 	 * @return int
+	 * @deprecated Use de.v10lator.v10verlap.api.Hooks.getMaxY(int)
 	 */
+	@Deprecated
 	public static int getMaxY(int world) throws NotLinkedException
 	{
-		V10verlap_API.getUpperWorld(world);
-		return V10verlap_API.plugin.config.get(Integer.toString(world), "maxY", 128).getInt();
+		try
+		{
+			return Hooks.getMaxY(world);
+		}
+		catch(de.v10lator.v10verlap.api.V10verlapException e)
+		{
+			throw self.new NotLinkedException(e);
+		}
 	}
 	
 	/** Returns the upper world
 	 * 
 	 * @param world - The world id
 	 * @return World - The upper world id
+	 * @deprecated Use de.v10lator.v10verlap.api.Hooks.getUpperWorld(int)
 	 */
+	@Deprecated
 	public static int getUpperWorld(int world) throws NotLinkedException
 	{
-		return V10verlap_API.getUpperWorld(Integer.toString(world));
+		try
+		{
+			return Hooks.getUpperWorld(world);
+		}
+		catch(de.v10lator.v10verlap.api.V10verlapException e)
+		{
+			throw self.new NotLinkedException(e);
+		}
 	}
 	
 	/** Returns the upper world
 	 * 
 	 * @param world - The world name
 	 * @return World - The upper world id
+	 * @deprecated Use de.v10lator.v10verlap.api.Hooks.getUpperWorld(String)
 	 */
+	@Deprecated
 	public static int getUpperWorld(String worldName) throws NotLinkedException
 	{
-		if(!V10verlap_API.plugin.config.hasCategory(worldName))
-			throw self.new NotLinkedException();
-		String name = V10verlap_API.plugin.config.get(worldName, "upper", "none").getString();
-		if(name.equals("none"))
-			throw self.new NotLinkedException();
 		try
 		{
-			return Integer.parseInt(name);
+			return Hooks.getUpperWorld(worldName);
 		}
-		catch(NumberFormatException e)
+		catch(de.v10lator.v10verlap.api.V10verlapException e)
 		{
 			throw self.new NotLinkedException(e);
 		}
@@ -113,29 +135,35 @@ public class V10verlap_API
 	 * 
 	 * @param world - The world id
 	 * @return World - The lower world id
+	 * @deprecated Use de.v10lator.v10verlap.api.Hooks.getLowerWorld(int)
 	 */
+	@Deprecated
 	public static int getLowerWorld(int world) throws NotLinkedException
 	{
-		return V10verlap_API.getLowerWorld(Integer.toString(world));
+		try
+		{
+			return Hooks.getLowerWorld(world);
+		}
+		catch(de.v10lator.v10verlap.api.V10verlapException e)
+		{
+			throw self.new NotLinkedException(e);
+		}
 	}
 	
 	/** Returns the lower world
 	 * 
 	 * @param world - The world name
 	 * @return World - The lower world id
+	 * @deprecated Use de.v10lator.v10verlap.api.Hooks.getLowerWorld(String)
 	 */
+	@Deprecated
 	public static int getLowerWorld(String worldName) throws NotLinkedException
 	{
-		if(!V10verlap_API.plugin.config.hasCategory(worldName))
-			throw self.new NotLinkedException();
-		String name = V10verlap_API.plugin.config.get(worldName, "lower", "none").getString();
-		if(name.equals("none"))
-			throw self.new NotLinkedException();
 		try
 		{
-			return Integer.parseInt(name);
+			return Hooks.getLowerWorld(worldName);
 		}
-		catch(NumberFormatException e)
+		catch(de.v10lator.v10verlap.api.V10verlapException e)
 		{
 			throw self.new NotLinkedException(e);
 		}
@@ -145,15 +173,19 @@ public class V10verlap_API
 	 * 
 	 * @param world - The world id
 	 * @return World - The scale
+	 * @derecated Use de.v10lator.v10verlap.api.Hooks.getScale(int)
 	 */
+	@Deprecated
 	public static double getScale(int world) throws NotLinkedException
 	{
-		String worldName = Integer.toString(world);
-		if(!V10verlap_API.plugin.config.hasCategory(worldName))
-			throw self.new NotLinkedException();
-		
-		return V10verlap_API.plugin.config.hasKey(worldName, "scale") ? V10verlap_API.plugin.config.get(worldName, "scale", 1.0D).getDouble() : 
-			plugin.respectNetherScale && FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(world).provider.getDimensionType() == DimensionType.NETHER ? 8.0D : 1.0D;
+		try
+		{
+			return Hooks.getScale(world);
+		}
+		catch(de.v10lator.v10verlap.api.V10verlapException e)
+		{
+			throw self.new NotLinkedException(e);
+		}
 	}
 	
 	/**

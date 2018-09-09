@@ -26,6 +26,8 @@ import java.util.Map.Entry;
 
 import org.apache.logging.log4j.LogManager;
 
+import de.v10lator.v10verlap.api.Hooks;
+import de.v10lator.v10verlap.api.V10verlapException;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -56,10 +58,10 @@ import net.minecraftforge.server.permission.PermissionAPI;
 @Mod(modid = "##MODID##", name = "##NAME##", version = "##VERSION##", acceptedMinecraftVersions = "1.12.2", serverSideOnly = true, acceptableRemoteVersions = "*", updateJSON="http://forge.home.v10lator.de/update.json?id=##MODID##&v=##VERSION##")
 public class V10verlap {
 	private final HashMap<V10verlapBlock, Integer> blocks = new HashMap<V10verlapBlock, Integer>();
-	Configuration config;
+	public Configuration config;
 	private final String ENTITY_FALL_TAG = "##MODID##.noFallDamage";
 	private boolean noFallDamage, relativeToSpawn;
-	boolean respectNetherScale;
+	public boolean respectNetherScale;
 	private int placeClimbBlock;
 	final String permNode = "##MODID##.command";
 	
@@ -68,7 +70,7 @@ public class V10verlap {
 		config = new Configuration(new File(event.getModConfigurationDirectory(), "##NAME##.cfg"));
 		reloadConfig();
 		MinecraftForge.EVENT_BUS.register(this);
-		V10verlap_API.init(this);
+		Hooks.init(this);
 	}
 	
 	@Mod.EventHandler
@@ -163,21 +165,21 @@ public class V10verlap {
 			worldId = dimension.provider.getDimension();
 			try
 			{
-				lower = V10verlap_API.getLowerWorld(worldId);
-				minY = V10verlap_API.getMinY(worldId);
+				lower = Hooks.getLowerWorld(worldId);
+				minY = Hooks.getMinY(worldId);
 				lowerAvail = true;
 			}
-			catch(V10verlap_API.NotLinkedException e)
+			catch(V10verlapException e)
 			{
 				lowerAvail = false;
 			}
 			try
 			{
-				upper = V10verlap_API.getUpperWorld(worldId);
-				maxY = V10verlap_API.getMaxY(worldId);
+				upper = Hooks.getUpperWorld(worldId);
+				maxY = Hooks.getMaxY(worldId);
 				upperAvail = true;
 			}
-			catch(V10verlap_API.NotLinkedException e)
+			catch(V10verlapException e)
 			{
 				upperAvail = false;
 			}
@@ -187,7 +189,7 @@ public class V10verlap {
 				entities[i] = dimension.loadedEntityList.get(i);
 			
 			oldWorldSpawnPos = dimension.getSpawnPoint();
-			oldScale = V10verlap_API.getScale(worldId);
+			oldScale = Hooks.getScale(worldId);
 			for(Entity entity: entities)
 			{
 				data = entity.getEntityData();
@@ -210,9 +212,9 @@ public class V10verlap {
 				{
 					try
 					{
-						y = V10verlap_API.getMaxY(lower) - 1;
+						y = Hooks.getMaxY(lower) - 1;
 					}
-					catch(V10verlap_API.NotLinkedException e)
+					catch(V10verlapException e)
 					{
 						LogManager.getLogger("##NAME##").error("Invalid link between DIM" + worldId + " and DIM" + lower + ". Canceling teleport!");
 						lowerAvail = false;
@@ -225,9 +227,9 @@ public class V10verlap {
 				{
 					try
 					{
-						y = V10verlap_API.getMinY(upper) + 1;
+						y = Hooks.getMinY(upper) + 1;
 					}
-					catch(V10verlap_API.NotLinkedException e)
+					catch(V10verlapException e)
 					{
 						LogManager.getLogger("##NAME##").error("Invalid link between DIM" + worldId + " and DIM" + upper + ". Canceling teleport!");
 						upperAvail = false;
@@ -263,7 +265,7 @@ public class V10verlap {
 					z -= oldWorldSpawnPos.getZ();
 				}
 				
-				newScale = V10verlap_API.getScale(to);
+				newScale = Hooks.getScale(to);
 				if(oldScale != newScale)
 				{
 					x *= oldScale;
