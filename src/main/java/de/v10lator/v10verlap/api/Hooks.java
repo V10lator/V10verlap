@@ -19,8 +19,6 @@
 package de.v10lator.v10verlap.api;
 
 import de.v10lator.v10verlap.V10verlap;
-import net.minecraft.world.DimensionType;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 
 public class Hooks
 {
@@ -149,13 +147,12 @@ public class Hooks
 	 * @param world - The world id
 	 * @return World - The scale
 	 */
-	public static double getScale(int world) throws NotLinkedException, NotConfiguredException
+	public static double getScale(int world) throws NotConfiguredException
 	{
 		String worldName = Integer.toString(world);
-		if(!Hooks.plugin.config.hasCategory(worldName))
+		if(!Hooks.plugin.config.hasCategory(worldName) || !Hooks.plugin.config.hasKey(worldName, "scale"))
 			throw new NotConfiguredException();
 		
-		return Hooks.plugin.config.hasKey(worldName, "scale") ? Hooks.plugin.config.get(worldName, "scale", 1.0D).getDouble() : 
-			plugin.respectNetherScale && FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(world).provider.getDimensionType() == DimensionType.NETHER ? 8.0D : 1.0D;
+		return Hooks.plugin.config.get(worldName, "scale", 1.0D).getDouble();
 	}
 }

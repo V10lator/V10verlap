@@ -36,12 +36,14 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.common.config.Property;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -60,14 +62,13 @@ public class V10verlap {
 	private final HashMap<V10verlapBlock, Integer> blocks = new HashMap<V10verlapBlock, Integer>();
 	public Configuration config;
 	private final String ENTITY_FALL_TAG = "##MODID##.noFallDamage";
-	private boolean noFallDamage, relativeToSpawn;
-	public boolean respectNetherScale;
+	private boolean noFallDamage, relativeToSpawn, transformNetherScale;
 	private int placeClimbBlock;
 	final String permNode = "##MODID##.command";
 	
 	@Mod.EventHandler
     public void onPreInit(FMLPreInitializationEvent event) {
-		config = new Configuration(new File(event.getModConfigurationDirectory(), "##NAME##.cfg"));
+		config = new Configuration(new File(event.getModConfigurationDirectory(), "##NAME##.cfg"), "1.0");
 		reloadConfig();
 		MinecraftForge.EVENT_BUS.register(this);
 		Hooks.init(this);
@@ -97,6 +98,10 @@ public class V10verlap {
 		config.get(world, "lower", id == 0 ? "-1" : id == 1 ? "0" : "none");
 		config.get(world, "minY", 0);
 		config.get(world, "maxY", dimension.getHeight());
+		if(transformNetherScale && !config.hasKey(world, "scale") && dimension.provider.getDimensionType() == DimensionType.NETHER)
+			config.get(world, "scale", "8.0D");
+		else
+			config.get(world, "scale", "1.0D");
 		if(config.hasChanged())
 			config.save();
 	}
@@ -125,10 +130,20 @@ public class V10verlap {
 	void reloadConfig()
 	{
 		config.load();
+		double version = config.get(Configuration.CATEGORY_GENERAL, "version", 0.0D).getDouble();
+		if(version < 1.0D) // Transform respectNetherScale to custom scale
+		{
+			if(config.hasKey(Configuration.CATEGORY_GENERAL, "respectNetherScale"))
+			{
+				Property prop = config.get(Configuration.CATEGORY_GENERAL, "respectNetherScale", false);
+				transformNetherScale = prop.getBoolean();
+				config.getCategory(Configuration.CATEGORY_GENERAL).remove("respectNetherScale");
+				config.get(Configuration.CATEGORY_GENERAL, "version", 0.0D).set(1.0D);
+			}
+		}
 		placeClimbBlock = config.get(Configuration.CATEGORY_GENERAL, "placeClimbBlock", 0).getInt() * 20;
 		noFallDamage = config.get(Configuration.CATEGORY_GENERAL, "noFallDamage", false).getBoolean();
 		relativeToSpawn = config.get(Configuration.CATEGORY_GENERAL, "relativeToSpawn", false).getBoolean();
-		respectNetherScale = config.get(Configuration.CATEGORY_GENERAL, "respectNetherScale", false).getBoolean();
 		if(config.hasChanged())
 			config.save();
 	}

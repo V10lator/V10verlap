@@ -199,10 +199,6 @@ public class V10verlapCommand extends CommandBase {
 			case "rts":
 				changeBoolConf("relativeToSpawn", sender, args);
 				return;
-			case "respectnetherscale":
-			case "rns":
-				changeBoolConf("respectNetherScale", sender, args);
-				return;
 			default:
 				sender.sendMessage(makeMessage(TextFormatting.RED, getUsage(sender)));
 				return;
