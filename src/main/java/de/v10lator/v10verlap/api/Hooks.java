@@ -19,6 +19,7 @@
 package de.v10lator.v10verlap.api;
 
 import de.v10lator.v10verlap.V10verlap;
+import net.minecraftforge.common.config.Configuration;
 
 public class Hooks
 {
@@ -64,7 +65,9 @@ public class Hooks
 	public static int getMinY(int world) throws NotLinkedException, NotConfiguredException, ConfigurationErrorException
 	{
 		Hooks.getLowerWorld(world);
-		return Hooks.plugin.config.get(Integer.toString(world), "minY", 0).getInt();
+		int ret = plugin.configManager.getLockedConfig().get(Integer.toString(world), "minY", 0).getInt();
+		plugin.configManager.releaseLock();
+		return ret;
 	}
 
 	/** Returns the maximum Y
@@ -75,7 +78,9 @@ public class Hooks
 	public static int getMaxY(int world) throws NotLinkedException, NotConfiguredException, ConfigurationErrorException
 	{
 		Hooks.getUpperWorld(world);
-		return Hooks.plugin.config.get(Integer.toString(world), "maxY", 128).getInt();
+		int ret = plugin.configManager.getLockedConfig().get(Integer.toString(world), "maxY", 128).getInt();
+		plugin.configManager.releaseLock();
+		return ret;
 	}
 	
 	/** Returns the upper world
@@ -95,9 +100,14 @@ public class Hooks
 	 */
 	public static int getUpperWorld(String worldName) throws NotLinkedException, NotConfiguredException, ConfigurationErrorException
 	{
-		if(!Hooks.plugin.config.hasCategory(worldName))
+		Configuration config = plugin.configManager.getLockedConfig();
+		if(!config.hasCategory(worldName))
+		{
+			plugin.configManager.releaseLock();
 			throw new NotConfiguredException();
-		String name = Hooks.plugin.config.get(worldName, "upper", "none").getString();
+		}
+		String name = config.get(worldName, "upper", "none").getString();
+		plugin.configManager.releaseLock();
 		if(name.equals("none"))
 			throw new NotLinkedException();
 		try
@@ -127,9 +137,14 @@ public class Hooks
 	 */
 	public static int getLowerWorld(String worldName) throws NotLinkedException, NotConfiguredException, ConfigurationErrorException
 	{
-		if(!Hooks.plugin.config.hasCategory(worldName))
+		Configuration config = plugin.configManager.getLockedConfig();
+		if(!config.hasCategory(worldName))
+		{
+			plugin.configManager.releaseLock();
 			throw new NotConfiguredException();
-		String name = Hooks.plugin.config.get(worldName, "lower", "none").getString();
+		}
+		String name = config.get(worldName, "lower", "none").getString();
+		plugin.configManager.releaseLock();
 		if(name.equals("none"))
 			throw new NotLinkedException();
 		try
@@ -150,9 +165,14 @@ public class Hooks
 	public static double getScale(int world) throws NotConfiguredException
 	{
 		String worldName = Integer.toString(world);
-		if(!Hooks.plugin.config.hasCategory(worldName) || !Hooks.plugin.config.hasKey(worldName, "scale"))
+		Configuration config = plugin.configManager.getLockedConfig();
+		if(!config.hasCategory(worldName) || !config.hasKey(worldName, "scale"))
+		{
+			plugin.configManager.releaseLock();
 			throw new NotConfiguredException();
-		
-		return Hooks.plugin.config.get(worldName, "scale", 1.0D).getDouble();
+		}
+		double ret = config.get(worldName, "scale", 1.0D).getDouble();
+		plugin.configManager.releaseLock();
+		return ret;
 	}
 }

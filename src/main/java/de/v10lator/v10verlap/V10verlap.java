@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.LogManager;
 
@@ -43,7 +44,6 @@ import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.common.config.Property;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -60,16 +60,16 @@ import net.minecraftforge.server.permission.PermissionAPI;
 @Mod(modid = "##MODID##", name = "##NAME##", version = "##VERSION##", acceptedMinecraftVersions = "1.12.2", serverSideOnly = true, acceptableRemoteVersions = "*", updateJSON="http://forge.home.v10lator.de/update.json?id=##MODID##&v=##VERSION##")
 public class V10verlap {
 	private final HashMap<V10verlapBlock, Integer> blocks = new HashMap<V10verlapBlock, Integer>();
-	public Configuration config;
 	private final String ENTITY_FALL_TAG = "##MODID##.noFallDamage";
-	private boolean noFallDamage, relativeToSpawn, transformNetherScale;
-	private int placeClimbBlock;
+	boolean noFallDamage, relativeToSpawn, transformNetherScale;
+	int placeClimbBlock;
 	final String permNode = "##MODID##.command";
+	AtomicBoolean saveLock = new AtomicBoolean(false);
+	public V10verlapSaveThread configManager;
 	
 	@Mod.EventHandler
     public void onPreInit(FMLPreInitializationEvent event) {
-		config = new Configuration(new File(event.getModConfigurationDirectory(), "##NAME##.cfg"), "1.0");
-		reloadConfig();
+		configManager = new V10verlapSaveThread(this, new Configuration(new File(event.getModConfigurationDirectory(), "##NAME##.cfg"), "1.0"));
 		MinecraftForge.EVENT_BUS.register(this);
 		Hooks.init(this);
 	}
@@ -78,6 +78,7 @@ public class V10verlap {
 	public void onServerStart(FMLServerStartingEvent event) {
 		PermissionAPI.registerNode(permNode, DefaultPermissionLevel.OP, "Use the /dimmode command");
 		event.registerServerCommand(new V10verlapCommand(this));
+		configManager.start();
 	}
 	
 	@Mod.EventHandler
@@ -86,6 +87,8 @@ public class V10verlap {
 		for(V10verlapBlock block: blocks.keySet())
 			resetBlock(ms, block);
 		blocks.clear();
+		configManager.die();
+		configManager.sto
 	}
 	
 	@SubscribeEvent
@@ -94,6 +97,7 @@ public class V10verlap {
 		World dimension = event.getWorld();
 		int id = dimension.provider.getDimension();
 		String world = Integer.toString(id);
+		Configuration config = configManager.getLockedConfig();
 		config.get(world, "upper", id == 0 ? "1" : id == -1 ? "0" : "none");
 		config.get(world, "lower", id == 0 ? "-1" : id == 1 ? "0" : "none");
 		config.get(world, "minY", 0);
@@ -102,8 +106,7 @@ public class V10verlap {
 			config.get(world, "scale", "8.0D");
 		else
 			config.get(world, "scale", "1.0D");
-		if(config.hasChanged())
-			config.save();
+		configManager.releaseLock();
 	}
 	
 	@SubscribeEvent
@@ -125,27 +128,6 @@ public class V10verlap {
 			return;
 		event.setCanceled(true);
 		data.removeTag(ENTITY_FALL_TAG);
-	}
-	
-	void reloadConfig()
-	{
-		config.load();
-		double version = config.get(Configuration.CATEGORY_GENERAL, "version", 0.0D).getDouble();
-		if(version < 1.0D) // Transform respectNetherScale to custom scale
-		{
-			if(config.hasKey(Configuration.CATEGORY_GENERAL, "respectNetherScale"))
-			{
-				Property prop = config.get(Configuration.CATEGORY_GENERAL, "respectNetherScale", false);
-				transformNetherScale = prop.getBoolean();
-				config.getCategory(Configuration.CATEGORY_GENERAL).remove("respectNetherScale");
-				config.get(Configuration.CATEGORY_GENERAL, "version", 0.0D).set(1.0D);
-			}
-		}
-		placeClimbBlock = config.get(Configuration.CATEGORY_GENERAL, "placeClimbBlock", 0).getInt() * 20;
-		noFallDamage = config.get(Configuration.CATEGORY_GENERAL, "noFallDamage", false).getBoolean();
-		relativeToSpawn = config.get(Configuration.CATEGORY_GENERAL, "relativeToSpawn", false).getBoolean();
-		if(config.hasChanged())
-			config.save();
 	}
 	
 	@SubscribeEvent

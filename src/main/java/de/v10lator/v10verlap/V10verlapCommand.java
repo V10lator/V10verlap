@@ -61,7 +61,7 @@ public class V10verlapCommand extends CommandBase {
 			return;
 		}
 		boolean nv = Boolean.parseBoolean(args[1]);
-		Property prop = mod.config.get(Configuration.CATEGORY_GENERAL, key, false);
+		Property prop = mod.configManager.getLockedConfig().get(Configuration.CATEGORY_GENERAL, key, false);
 		boolean value = prop.getBoolean();
 		if(value == nv)
 		{
@@ -69,8 +69,7 @@ public class V10verlapCommand extends CommandBase {
 			return;
 		}
 		prop.set(nv);
-		mod.config.save();
-		mod.reloadConfig();
+		mod.configManager.releaseLock();
 		sender.sendMessage(makeMessage(TextFormatting.GREEN, "Set " + key + " to " + nv + "!"));
 	}
 	
@@ -137,14 +136,12 @@ public class V10verlapCommand extends CommandBase {
 		args[1] = Integer.toString(dimA);
 		args[2] = Integer.toString(dimB);
 		
-		
-		mod.config.get(args[2], "upper", args[1]).set(args[1]);
-		mod.config.get(args[2], "maxY", maxY).set(maxY);
-		mod.config.get(args[1], "lower", args[2]).set(args[2]);
-		mod.config.get(args[1], "minY", minY).set(minY);
-		
-		if(mod.config.hasChanged())
-			mod.config.save();
+		Configuration config = mod.configManager.getLockedConfig();
+		config.get(args[2], "upper", args[1]).set(args[1]);
+		config.get(args[2], "maxY", maxY).set(maxY);
+		config.get(args[1], "lower", args[2]).set(args[2]);
+		config.get(args[1], "minY", minY).set(minY);
+		mod.configManager.releaseLock();
 		sender.sendMessage(makeMessage(TextFormatting.GREEN, "Dimensions linked!"));
 	}
 	
@@ -181,18 +178,19 @@ public class V10verlapCommand extends CommandBase {
 		args[1] = Integer.toString(dimA);
 		args[2] = Integer.toString(dimB);
 		
-		Property propA = mod.config.get(args[1], "upper", "none");
+		Configuration config = mod.configManager.getLockedConfig();
+		Property propA = config.get(args[1], "upper", "none");
 		boolean upperA = propA.getString().equals(args[2]);
 		if(!upperA)
 		{
-			propA = mod.config.get(args[1], "lower", "none");
+			propA = config.get(args[1], "lower", "none");
 			if(!propA.getString().equals(args[2]))
 			{
 				sender.sendMessage(makeMessage(TextFormatting.RED, "Invalid links"));
 				return;
 			}
 		}
-		Property propB = mod.config.get(args[2], upperA ? "lower" : "upper", "none");
+		Property propB = config.get(args[2], upperA ? "lower" : "upper", "none");
 		if(!propB.getString().equals(args[1]))
 		{
 			sender.sendMessage(makeMessage(TextFormatting.RED, "Invalid links"));
@@ -202,8 +200,7 @@ public class V10verlapCommand extends CommandBase {
 		propA.set("none");
 		propB.set("none");
 		
-		if(mod.config.hasChanged())
-			mod.config.save();
+		mod.configManager.releaseLock();
 		sender.sendMessage(makeMessage(TextFormatting.GREEN, "Dimensions unlinked!"));
 	}
 	
@@ -224,7 +221,7 @@ public class V10verlapCommand extends CommandBase {
 			sender.sendMessage(makeMessage(TextFormatting.RED, "Invalid seconds: " + args[1]));
 			return;
 		}
-		Property prop = mod.config.get(Configuration.CATEGORY_GENERAL, "placeClimbBlock", 0);
+		Property prop = mod.configManager.getLockedConfig().get(Configuration.CATEGORY_GENERAL, "placeClimbBlock", 0);
 		int value = prop.getInt();
 		if(value == nv)
 		{
@@ -232,8 +229,7 @@ public class V10verlapCommand extends CommandBase {
 			return;
 		}
 		prop.set(nv);
-		mod.config.save();
-		mod.reloadConfig();
+		mod.configManager.releaseLock();
 		sender.sendMessage(makeMessage(TextFormatting.GREEN, nv == 0 ? "Disabled tmp block spawning!" : "Set tmp block live time to " + nv + " seconds!"));
 	}
 	
@@ -284,8 +280,8 @@ public class V10verlapCommand extends CommandBase {
 			sender.sendMessage(makeMessage(TextFormatting.RED, "No change!"));
 			return;
 		}
-		mod.config.get(Integer.toString(dim), "scale", 1.0D).set(scale);
-		mod.config.save();
+		mod.configManager.getLockedConfig().get(Integer.toString(dim), "scale", 1.0D).set(scale);
+		mod.configManager.releaseLock();
 		sender.sendMessage(makeMessage(TextFormatting.GREEN, "New scale for DIM" + Integer.toString(dim) + ": " + Double.toString(scale)));
 	}
 
