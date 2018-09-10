@@ -146,64 +146,9 @@ public class V10verlapCommand extends CommandBase {
 			mod.config.save();
 		sender.sendMessage(makeMessage(TextFormatting.GREEN, "Dimensions linked!"));
 	}
-
-	@Override
-	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
-		if(args.length < 1)
-		{
-			sender.sendMessage(makeMessage(TextFormatting.RED, getUsage(sender)));
-			return;
-		}
-		args[0] = args[0].toLowerCase();
-		switch(args[0])
-		{
-			case "link":
-				link(server, sender, args);
-				return;
-			case "unlink":
-				break;
-			case "placeclimbblock":
-			case "pcb":
-				if(args.length != 2)
-				{
-					sender.sendMessage(makeMessage(TextFormatting.RED, "/v10verlap placeClimbBlocks <timeInSeconds>"));
-					return;
-				}
-				int nv;
-				try
-				{
-					nv = Integer.parseInt((args[1]));
-				}
-				catch(NumberFormatException e)
-				{
-					sender.sendMessage(makeMessage(TextFormatting.RED, "Invalid seconds: " + args[1]));
-					return;
-				}
-				Property prop = mod.config.get(Configuration.CATEGORY_GENERAL, "placeClimbBlock", 0);
-				int value = prop.getInt();
-				if(value == nv)
-				{
-					sender.sendMessage(makeMessage(TextFormatting.RED, "No change!"));
-					return;
-				}
-				prop.set(nv);
-				mod.config.save();
-				mod.reloadConfig();
-				sender.sendMessage(makeMessage(TextFormatting.GREEN, nv == 0 ? "Disabled tmp block spawning!" : "Set tmp block live time to " + nv + " seconds!"));
-				return;
-			case "nofalldamage":
-			case "nfd":
-				changeBoolConf("noFallDamage", sender, args);
-				return;
-			case "relativetospawn":
-			case "rts":
-				changeBoolConf("relativeToSpawn", sender, args);
-				return;
-			default:
-				sender.sendMessage(makeMessage(TextFormatting.RED, getUsage(sender)));
-				return;
-		}
-		
+	
+	private void unlink(MinecraftServer server, ICommandSender sender, String[] args)
+	{
 		if(args.length != 3)
 		{
 			sender.sendMessage(makeMessage(TextFormatting.RED, "/v10verlap unlink <dimension 1> <dimension 2>"));
@@ -259,6 +204,70 @@ public class V10verlapCommand extends CommandBase {
 		if(mod.config.hasChanged())
 			mod.config.save();
 		sender.sendMessage(makeMessage(TextFormatting.GREEN, "Dimensions unlinked!"));
+	}
+	
+	private void setTmpBlockTime(ICommandSender sender, String[] args)
+	{
+		if(args.length != 2)
+		{
+			sender.sendMessage(makeMessage(TextFormatting.RED, "/v10verlap placeClimbBlocks <timeInSeconds>"));
+			return;
+		}
+		int nv;
+		try
+		{
+			nv = Integer.parseInt((args[1]));
+		}
+		catch(NumberFormatException e)
+		{
+			sender.sendMessage(makeMessage(TextFormatting.RED, "Invalid seconds: " + args[1]));
+			return;
+		}
+		Property prop = mod.config.get(Configuration.CATEGORY_GENERAL, "placeClimbBlock", 0);
+		int value = prop.getInt();
+		if(value == nv)
+		{
+			sender.sendMessage(makeMessage(TextFormatting.RED, "No change!"));
+			return;
+		}
+		prop.set(nv);
+		mod.config.save();
+		mod.reloadConfig();
+		sender.sendMessage(makeMessage(TextFormatting.GREEN, nv == 0 ? "Disabled tmp block spawning!" : "Set tmp block live time to " + nv + " seconds!"));
+	}
+
+	@Override
+	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
+		if(args.length < 1)
+		{
+			sender.sendMessage(makeMessage(TextFormatting.RED, getUsage(sender)));
+			return;
+		}
+		args[0] = args[0].toLowerCase();
+		switch(args[0])
+		{
+			case "link":
+				link(server, sender, args);
+				break;
+			case "unlink":
+				unlink(server, sender, args);
+				break;
+			case "placeclimbblock":
+			case "pcb":
+				setTmpBlockTime(sender, args);
+				break;
+			case "nofalldamage":
+			case "nfd":
+				changeBoolConf("noFallDamage", sender, args);
+				break;
+			case "relativetospawn":
+			case "rts":
+				changeBoolConf("relativeToSpawn", sender, args);
+				break;
+			default:
+				sender.sendMessage(makeMessage(TextFormatting.RED, getUsage(sender)));
+				break;
+		}
 	}
 	
 	private TextComponentString makeMessage(TextFormatting color, String message) {
