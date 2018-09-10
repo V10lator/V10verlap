@@ -18,6 +18,7 @@
 
 package de.v10lator.v10verlap;
 
+import de.v10lator.v10verlap.api.Hooks;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -235,6 +236,58 @@ public class V10verlapCommand extends CommandBase {
 		mod.reloadConfig();
 		sender.sendMessage(makeMessage(TextFormatting.GREEN, nv == 0 ? "Disabled tmp block spawning!" : "Set tmp block live time to " + nv + " seconds!"));
 	}
+	
+	private void setScale(MinecraftServer server, ICommandSender sender, String[] args)
+	{
+		String scales;
+		int dim;
+		if(args.length != 3)
+		{
+			if(!(sender instanceof EntityPlayer) || args.length != 2)
+			{
+				sender.sendMessage(makeMessage(TextFormatting.RED, "/v10verlap scale <world> <scale>"));
+				return;
+			}
+			scales = args[2];
+			dim = ((EntityPlayer)sender).dimension;
+		}
+		else
+		{
+			scales = args[3];
+			try
+			{
+				dim = Integer.parseInt(args[2]);
+			}
+			catch(NumberFormatException e)
+			{
+				sender.sendMessage(makeMessage(TextFormatting.RED, "Invalid dimension: " + args[2]));
+				return;
+			}
+			if(server.getWorld(dim) == null)
+			{
+				sender.sendMessage(makeMessage(TextFormatting.RED, "Invalid dimension: " + args[2]));
+				return;
+			}
+		}
+		double scale;
+		try
+		{
+			scale = Double.parseDouble(scales);
+		}
+		catch(NumberFormatException e)
+		{
+			sender.sendMessage(makeMessage(TextFormatting.RED, "Invalid scale: " + scales));
+			return;
+		}
+		if(scale == Hooks.getScale(dim))
+		{
+			sender.sendMessage(makeMessage(TextFormatting.RED, "No change!"));
+			return;
+		}
+		mod.config.get(Integer.toString(dim), "scale", 1.0D).set(scale);
+		mod.config.save();
+		sender.sendMessage(makeMessage(TextFormatting.GREEN, "New scale for DIM" + Integer.toString(dim) + ": " + Double.toString(scale)));
+	}
 
 	@Override
 	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
@@ -263,6 +316,9 @@ public class V10verlapCommand extends CommandBase {
 			case "relativetospawn":
 			case "rts":
 				changeBoolConf("relativeToSpawn", sender, args);
+				break;
+			case "scale":
+				setScale(server, sender, args);
 				break;
 			default:
 				sender.sendMessage(makeMessage(TextFormatting.RED, getUsage(sender)));
