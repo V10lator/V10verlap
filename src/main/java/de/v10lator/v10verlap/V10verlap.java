@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.LogManager;
 
@@ -64,12 +63,11 @@ public class V10verlap {
 	boolean noFallDamage, relativeToSpawn, transformNetherScale;
 	int placeClimbBlock;
 	final String permNode = "##MODID##.command";
-	AtomicBoolean saveLock = new AtomicBoolean(false);
 	public V10verlapSaveThread configManager;
 	
 	@Mod.EventHandler
     public void onPreInit(FMLPreInitializationEvent event) {
-		configManager = new V10verlapSaveThread(this, new Configuration(new File(event.getModConfigurationDirectory(), "##NAME##.cfg"), "1.0"));
+		configManager = new V10verlapSaveThread(this, new Configuration(new File(event.getModConfigurationDirectory(), "##NAME##.cfg")));
 		MinecraftForge.EVENT_BUS.register(this);
 		Hooks.init(this);
 	}
@@ -88,7 +86,6 @@ public class V10verlap {
 			resetBlock(ms, block);
 		blocks.clear();
 		configManager.die();
-		configManager.sto
 	}
 	
 	@SubscribeEvent
