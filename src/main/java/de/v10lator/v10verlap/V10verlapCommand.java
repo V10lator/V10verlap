@@ -244,15 +244,15 @@ public class V10verlapCommand extends CommandBase {
 				sender.sendMessage(makeMessage(TextFormatting.RED, "/v10verlap scale <world> <scale>"));
 				return;
 			}
-			scales = args[2];
+			scales = args[1];
 			dim = ((EntityPlayer)sender).dimension;
 		}
 		else
 		{
-			scales = args[3];
+			scales = args[2];
 			try
 			{
-				dim = Integer.parseInt(args[2]);
+				dim = Integer.parseInt(args[1]);
 			}
 			catch(NumberFormatException e)
 			{

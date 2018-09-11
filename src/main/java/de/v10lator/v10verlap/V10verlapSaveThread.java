@@ -54,7 +54,7 @@ public class V10verlapSaveThread extends Thread {
 			releaseLock();
 			try
 			{
-				Thread.sleep(60000L);
+				Thread.sleep(300000L);
 			}
 			catch (InterruptedException e) {
 			}
