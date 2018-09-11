@@ -61,7 +61,7 @@ public class V10verlapSaveThread extends Thread {
 		}
 	}
 	
-	void reloadConfig()
+	private void reloadConfig()
 	{
 		config.load();
 		double version = config.get(Configuration.CATEGORY_GENERAL, "version", 0.0D).getDouble();
