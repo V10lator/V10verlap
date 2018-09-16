@@ -19,6 +19,7 @@
 package de.v10lator.v10verlap;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -52,6 +53,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent;
 import net.minecraftforge.server.permission.DefaultPermissionLevel;
 import net.minecraftforge.server.permission.PermissionAPI;
@@ -64,6 +66,7 @@ public class V10verlap {
 	int placeClimbBlock;
 	final String permNode = "##MODID##.command";
 	public V10verlapSaveThread configManager;
+	private final ArrayList<TeleportMetadata> metaData = new ArrayList<TeleportMetadata>();
 	
 	@Mod.EventHandler
     public void onPreInit(FMLPreInitializationEvent event) {
@@ -129,6 +132,9 @@ public class V10verlap {
 	
 	@SubscribeEvent
 	public void onTick(ServerTickEvent event) {
+		if(event.phase == TickEvent.Phase.START)
+			return;
+		
 		MinecraftServer ms = FMLCommonHandler.instance().getMinecraftServerInstance();
 		if(!blocks.isEmpty())
 		{
@@ -151,7 +157,6 @@ public class V10verlap {
 		int worldId, lower = 0, upper = 0, to, minY = 0, maxY = 0;
 		BlockPos pos, oldWorldSpawnPos, newWorldSpawnPos = null;
 		double x, y, z, oldScale, newScale;
-		Entity[] entities;
 		boolean down, lowerAvail, upperAvail;
 		NBTTagCompound data;
 		for(WorldServer dimension: DimensionManager.getWorlds())
@@ -178,13 +183,9 @@ public class V10verlap {
 				upperAvail = false;
 			}
 			
-			entities = new Entity[dimension.loadedEntityList.size()];
-			for(int i = 0; i < entities.length; i++)
-				entities[i] = dimension.loadedEntityList.get(i);
-			
 			oldWorldSpawnPos = dimension.getSpawnPoint();
 			oldScale = Hooks.getScale(worldId);
-			for(Entity entity: entities)
+			for(Entity entity: dimension.loadedEntityList)
 			{
 				data = entity.getEntityData();
 				if(noFallDamage && data.hasKey(ENTITY_FALL_TAG))
@@ -198,10 +199,7 @@ public class V10verlap {
 				if((!lowerAvail && !upperAvail) || entity.isDead || entity.isRiding())
 					continue;
 				
-				x = entity.posX;
 				y = entity.posY;
-				z = entity.posZ;
-				pos = new BlockPos(x, y, z).down();
 				if(lowerAvail && y <= minY)
 				{
 					try
@@ -252,6 +250,8 @@ public class V10verlap {
 					continue;
 				}
 				
+				x = entity.posX;
+				z = entity.posZ;
 				if(relativeToSpawn)
 				{
 					newWorldSpawnPos = ws.getSpawnPoint();
@@ -275,7 +275,7 @@ public class V10verlap {
 				}
 				
 				if(down && noFallDamage)
-					entity.getEntityData().setBoolean(ENTITY_FALL_TAG, false);
+					data.setBoolean(ENTITY_FALL_TAG, false);
 				
 				if(!down && placeClimbBlock > 0 && entity instanceof EntityPlayerMP)
 				{
@@ -287,9 +287,12 @@ public class V10verlap {
 					}
 				}
 				
-				this.teleport(entity, ms, dimension, ws, x, y, z);
+				metaData.add(new TeleportMetadata(entity, dimension, ws, x, y, z));
 			}
 		}
+		for(TeleportMetadata meta: metaData)
+			this.teleport(meta.entity, ms, meta.from, meta.to, meta.x, meta.y, meta.z);
+		metaData.clear();
 	}
 	
 	private void resetBlock(MinecraftServer ms, V10verlapBlock block)
@@ -331,5 +334,23 @@ public class V10verlap {
 		if(!passengers.isEmpty())
 			for(Entity passenger: passengers)
 				passenger.startRiding(entity, true);
+	}
+	
+	private class TeleportMetadata
+	{
+		private final Entity entity;
+		private final WorldServer from;
+		private final WorldServer to;
+		private final double x, y, z;
+		
+		private TeleportMetadata(Entity entity, WorldServer from, WorldServer to, double x, double y, double z)
+		{
+			this.entity = entity;
+			this.from = from;
+			this.to= to;
+			this.x = x;
+			this.y = y;
+			this.z = z;
+		}
 	}
 }

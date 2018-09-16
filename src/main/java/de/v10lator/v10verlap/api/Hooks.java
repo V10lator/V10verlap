@@ -25,6 +25,10 @@ public class Hooks
 {
 	private static V10verlap plugin = null;
 	private static final double version = 2.0D;
+	
+	private static final NotConfiguredException nce = new NotConfiguredException();
+	private static final NotLinkedException nle = new NotLinkedException();
+	private static final ConfigurationErrorException cee = new ConfigurationErrorException();
 
 	/** This is a internal function - DO NOT USE!
 	 * 
@@ -104,12 +108,12 @@ public class Hooks
 		if(!config.hasCategory(worldName))
 		{
 			plugin.configManager.releaseLock();
-			throw new NotConfiguredException();
+			throw Hooks.nce;
 		}
 		String name = config.get(worldName, "upper", "none").getString();
 		plugin.configManager.releaseLock();
 		if(name.equals("none"))
-			throw new NotLinkedException();
+			throw Hooks.nle;
 		try
 		{
 			return Integer.parseInt(name);
@@ -141,12 +145,12 @@ public class Hooks
 		if(!config.hasCategory(worldName))
 		{
 			plugin.configManager.releaseLock();
-			throw new NotConfiguredException();
+			throw Hooks.nce;
 		}
 		String name = config.get(worldName, "lower", "none").getString();
 		plugin.configManager.releaseLock();
 		if(name.equals("none"))
-			throw new NotLinkedException();
+			throw Hooks.nle;
 		try
 		{
 			return Integer.parseInt(name);
@@ -169,7 +173,7 @@ public class Hooks
 		if(!config.hasCategory(worldName) || !config.hasKey(worldName, "scale"))
 		{
 			plugin.configManager.releaseLock();
-			throw new NotConfiguredException();
+			throw Hooks.nce;
 		}
 		double ret = config.get(worldName, "scale", 1.0D).getDouble();
 		plugin.configManager.releaseLock();
