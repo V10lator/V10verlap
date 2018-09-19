@@ -55,10 +55,11 @@ import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent;
+import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.server.permission.DefaultPermissionLevel;
 import net.minecraftforge.server.permission.PermissionAPI;
 
-@Mod(modid = "##MODID##", name = "##NAME##", version = "##VERSION##", acceptedMinecraftVersions = "1.12.2", serverSideOnly = true, acceptableRemoteVersions = "*", updateJSON="http://forge.home.v10lator.de/update.json?id=##MODID##&v=##VERSION##")
+@Mod(modid = "##MODID##", name = "##NAME##", version = "##VERSION##", acceptedMinecraftVersions = "1.12.2", acceptableRemoteVersions = "*", updateJSON="http://forge.home.v10lator.de/update.json?id=##MODID##&v=##VERSION##")
 public class V10verlap {
 	private final HashMap<V10verlapBlock, Integer> blocks = new HashMap<V10verlapBlock, Integer>();
 	private final String ENTITY_FALL_TAG = "##MODID##.noFallDamage";
@@ -67,28 +68,42 @@ public class V10verlap {
 	final String permNode = "##MODID##.command";
 	public V10verlapSaveThread configManager;
 	private final ArrayList<TeleportMetadata> metaData = new ArrayList<TeleportMetadata>();
+	private File saveFile;
 	
 	@Mod.EventHandler
     public void onPreInit(FMLPreInitializationEvent event) {
-		configManager = new V10verlapSaveThread(this, new Configuration(new File(event.getModConfigurationDirectory(), "##NAME##.cfg")));
-		MinecraftForge.EVENT_BUS.register(this);
-		Hooks.init(this);
+		saveFile = new File(event.getModConfigurationDirectory(), "##NAME##.cfg");
 	}
 	
 	@Mod.EventHandler
 	public void onServerStart(FMLServerStartingEvent event) {
+		if(FMLCommonHandler.instance().getEffectiveSide() != Side.SERVER)
+		{
+			saveFile = null;
+			return;
+		}
+		LogManager.getLogger("##NAME##").info("V10verlap: FMLServerStartingEvent");
 		PermissionAPI.registerNode(permNode, DefaultPermissionLevel.OP, "Use the /dimmode command");
 		event.registerServerCommand(new V10verlapCommand(this));
+		MinecraftForge.EVENT_BUS.register(this);
+		Hooks.init(this);
+		configManager = new V10verlapSaveThread(this, new Configuration(saveFile));
 		configManager.start();
 	}
 	
 	@Mod.EventHandler
 	public void onServerStop(FMLServerStoppingEvent event) {
-		MinecraftServer ms = FMLCommonHandler.instance().getMinecraftServerInstance();
+		FMLCommonHandler ch = FMLCommonHandler.instance();
+		if(ch.getEffectiveSide() != Side.SERVER)
+			return;
+		LogManager.getLogger("##NAME##").info("V10verlap: FMLServerStartingEvent");
+		MinecraftForge.EVENT_BUS.unregister(this);
+		MinecraftServer ms = ch.getMinecraftServerInstance();
 		for(V10verlapBlock block: blocks.keySet())
 			resetBlock(ms, block);
 		blocks.clear();
 		configManager.die();
+		configManager = null;
 	}
 	
 	@SubscribeEvent
