@@ -83,7 +83,7 @@ public class V10verlap {
 			return;
 		}
 		LogManager.getLogger("##NAME##").info("V10verlap: FMLServerStartingEvent");
-		PermissionAPI.registerNode(permNode, DefaultPermissionLevel.OP, "Use the /dimmode command");
+		PermissionAPI.registerNode(permNode, DefaultPermissionLevel.OP, "Use the /v10verlap command");
 		event.registerServerCommand(new V10verlapCommand(this));
 		MinecraftForge.EVENT_BUS.register(this);
 		Hooks.init(this);
