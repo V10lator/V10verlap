@@ -5,13 +5,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 
-public class V10verlapSaveThread extends Thread {
+public class V10verlapConfigHandler extends Thread {
 	private boolean running = true;
 	private V10verlap mod;
 	private Configuration config;
 	private AtomicBoolean lock = new AtomicBoolean(false);
 	
-	V10verlapSaveThread(V10verlap mod, Configuration config)
+	V10verlapConfigHandler(V10verlap mod, Configuration config)
 	{
 		this.mod = mod;
 		this.config = config;

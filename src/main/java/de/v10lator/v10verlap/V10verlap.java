@@ -66,7 +66,7 @@ public class V10verlap {
 	boolean noFallDamage, relativeToSpawn, transformNetherScale = true;
 	int placeClimbBlock;
 	final String permNode = "##MODID##.command";
-	public V10verlapSaveThread configManager;
+	public V10verlapConfigHandler configManager;
 	private final ArrayList<TeleportMetadata> metaData = new ArrayList<TeleportMetadata>();
 	private File saveFile;
 	
@@ -87,7 +87,7 @@ public class V10verlap {
 		event.registerServerCommand(new V10verlapCommand(this));
 		MinecraftForge.EVENT_BUS.register(this);
 		Hooks.init(this);
-		configManager = new V10verlapSaveThread(this, new Configuration(saveFile));
+		configManager = new V10verlapConfigHandler(this, new Configuration(saveFile));
 		configManager.start();
 	}
 	
