@@ -63,7 +63,7 @@ import net.minecraftforge.server.permission.PermissionAPI;
 public class V10verlap {
 	private final HashMap<V10verlapBlock, Integer> blocks = new HashMap<V10verlapBlock, Integer>();
 	private final String ENTITY_FALL_TAG = "##MODID##.noFallDamage";
-	boolean noFallDamage, relativeToSpawn, transformNetherScale;
+	boolean noFallDamage, relativeToSpawn, transformNetherScale = true;
 	int placeClimbBlock;
 	final String permNode = "##MODID##.command";
 	public V10verlapSaveThread configManager;
@@ -117,10 +117,7 @@ public class V10verlap {
 		config.get(world, "lower", id == 0 ? "-1" : id == 1 ? "0" : "none");
 		config.get(world, "minY", 0);
 		config.get(world, "maxY", dimension.getHeight());
-		if(transformNetherScale && !config.hasKey(world, "scale") && dimension.provider.getDimensionType() == DimensionType.NETHER)
-			config.get(world, "scale", "8.0D");
-		else
-			config.get(world, "scale", "1.0D");
+		config.get(world, "scale", transformNetherScale && dimension.provider.getDimensionType() == DimensionType.NETHER ? 8.0D : 1.0D);
 		configManager.releaseLock();
 	}
 	

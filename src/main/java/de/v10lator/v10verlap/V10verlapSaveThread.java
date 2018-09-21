@@ -75,8 +75,8 @@ public class V10verlapSaveThread extends Thread {
 				config.get(Configuration.CATEGORY_GENERAL, "version", 0.0D).set(1.0D);
 			}
 		}
-		mod.placeClimbBlock = config.get(Configuration.CATEGORY_GENERAL, "placeClimbBlock", 0).getInt() * 20;
-		mod.noFallDamage = config.get(Configuration.CATEGORY_GENERAL, "noFallDamage", false).getBoolean();
+		mod.placeClimbBlock = config.get(Configuration.CATEGORY_GENERAL, "placeClimbBlock", 30).getInt() * 20;
+		mod.noFallDamage = config.get(Configuration.CATEGORY_GENERAL, "noFallDamage", true).getBoolean();
 		mod.relativeToSpawn = config.get(Configuration.CATEGORY_GENERAL, "relativeToSpawn", false).getBoolean();
 		if(config.hasChanged())
 			config.save();
