@@ -82,12 +82,13 @@ public class V10verlap {
 			saveFile = null;
 			return;
 		}
-		LogManager.getLogger("##NAME##").info("V10verlap: FMLServerStartingEvent");
 		PermissionAPI.registerNode(permNode, DefaultPermissionLevel.OP, "Use the /v10verlap command");
-		event.registerServerCommand(new V10verlapCommand(this));
-		MinecraftForge.EVENT_BUS.register(this);
-		Hooks.init(this);
 		configManager = new V10verlapConfigHandler(this, new Configuration(saveFile));
+		Hooks.init(this);
+		MinecraftForge.EVENT_BUS.register(this);
+		for(World world: DimensionManager.getWorlds())
+			this.onWorldLoad(new WorldEvent.Load(world));
+		event.registerServerCommand(new V10verlapCommand(this));
 		configManager.start();
 	}
 	
@@ -96,7 +97,6 @@ public class V10verlap {
 		FMLCommonHandler ch = FMLCommonHandler.instance();
 		if(ch.getEffectiveSide() != Side.SERVER)
 			return;
-		LogManager.getLogger("##NAME##").info("V10verlap: FMLServerStartingEvent");
 		MinecraftForge.EVENT_BUS.unregister(this);
 		MinecraftServer ms = ch.getMinecraftServerInstance();
 		for(V10verlapBlock block: blocks.keySet())

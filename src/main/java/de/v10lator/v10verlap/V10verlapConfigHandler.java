@@ -74,6 +74,7 @@ public class V10verlapConfigHandler extends Thread {
 				config.getCategory(Configuration.CATEGORY_GENERAL).remove("respectNetherScale");
 				config.get(Configuration.CATEGORY_GENERAL, "version", 0.0D).set(1.0D);
 			}
+			config.get(Configuration.CATEGORY_GENERAL, "version", 1.0D).set(1.0D);
 		}
 		mod.placeClimbBlock = config.get(Configuration.CATEGORY_GENERAL, "placeClimbBlock", 30).getInt() * 20;
 		mod.noFallDamage = config.get(Configuration.CATEGORY_GENERAL, "noFallDamage", true).getBoolean();
