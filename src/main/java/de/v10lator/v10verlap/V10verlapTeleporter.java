@@ -21,21 +21,18 @@ package de.v10lator.v10verlap;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
 
 public class V10verlapTeleporter extends Teleporter {
-	private final double x, y, z;
+	private final V10verlap.TeleportMetadata meta;
 	
-	public V10verlapTeleporter(WorldServer world, double x, double y, double z) {
-		super(world);
-		this.x = x;
-		this.y = y;
-		this.z = z;
+	public V10verlapTeleporter(V10verlap.TeleportMetadata meta) {
+		super(meta.to);
+		this.meta = meta;
 	}
 
 	@Override
     public void placeEntity(World world, Entity entity, float yaw)
     {
-        entity.setPosition(this.x, this.y, this.z);
+        entity.setPosition(meta.x, meta.y, meta.z);
 	}
 }

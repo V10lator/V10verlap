@@ -303,7 +303,7 @@ public class V10verlap {
 			}
 		}
 		for(TeleportMetadata meta: metaData)
-			this.teleport(meta.entity, ms, meta.from, meta.to, meta.x, meta.y, meta.z);
+			this.teleport(meta, ms);
 		metaData.clear();
 	}
 	
@@ -314,46 +314,46 @@ public class V10verlap {
 			ws.setBlockState(block.pos, Blocks.AIR.getDefaultState());
 	}
 	
-	private void teleport(Entity entity, MinecraftServer ms, WorldServer from, WorldServer to, double x, double y, double z)
+	private void teleport(TeleportMetadata meta, MinecraftServer ms)
 	{
-		List<Entity> passengers = entity.getPassengers();
+		List<Entity> passengers = meta.entity.getPassengers();
 		if(!passengers.isEmpty())
 		{
 			for(Entity passenger: passengers)
 			{
 				passenger.dismountRidingEntity();
-				teleport(passenger, ms, from, to, x, y, z);
+				teleport(new TeleportMetadata(passenger, meta.from, meta.to, meta.x, meta.y, meta.z), ms);
 			}
 		}
 		
-		if(entity instanceof EntityPlayerMP)
-			ms.getPlayerList().transferPlayerToDimension((EntityPlayerMP)entity, to.provider.getDimension(), new V10verlapTeleporter(to, x, y, z));
+		if(meta.entity instanceof EntityPlayerMP)
+			ms.getPlayerList().transferPlayerToDimension((EntityPlayerMP)meta.entity, meta.to.provider.getDimension(), new V10verlapTeleporter(meta));
 		else
 		{
-			from.getEntityTracker().untrack(entity);
-			from.removeEntityDangerously(entity);
+			meta.from.getEntityTracker().untrack(meta.entity);
+			meta.from.removeEntityDangerously(meta.entity);
 		    
-		    entity.isDead = false;
-		    entity.world = to;
-		    entity.dimension = to.provider.getDimension();
-		    entity.setPosition(x, y, z);
+			meta.entity.isDead = false;
+			meta.entity.world = meta.to;
+			meta.entity.dimension = meta.to.provider.getDimension();
+			meta.entity.setPosition(meta.x, meta.y, meta.z);
 		    
-		    to.getChunkFromChunkCoords(((int)Math.floor(x)) >> 4, ((int)Math.floor(z)) >> 4).addEntity(entity);
-            to.loadedEntityList.add(entity);
-            to.onEntityAdded(entity);
+			meta.to.getChunkFromChunkCoords(((int)Math.floor(meta.x)) >> 4, ((int)Math.floor(meta.z)) >> 4).addEntity(meta.entity);
+			meta.to.loadedEntityList.add(meta.entity);
+			meta.to.onEntityAdded(meta.entity);
 		}
 		
 		if(!passengers.isEmpty())
 			for(Entity passenger: passengers)
-				passenger.startRiding(entity, true);
+				passenger.startRiding(meta.entity, true);
 	}
 	
-	private class TeleportMetadata
+	class TeleportMetadata
 	{
 		private final Entity entity;
 		private final WorldServer from;
-		private final WorldServer to;
-		private final double x, y, z;
+		final WorldServer to;
+		final double x, y, z;
 		
 		private TeleportMetadata(Entity entity, WorldServer from, WorldServer to, double x, double y, double z)
 		{
