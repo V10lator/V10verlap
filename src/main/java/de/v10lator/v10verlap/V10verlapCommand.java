@@ -24,6 +24,7 @@ import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.common.config.Configuration;
@@ -323,9 +324,8 @@ public class V10verlapCommand extends CommandBase {
 	}
 	
 	private TextComponentString makeMessage(TextFormatting color, String message) {
-		color.getColorIndex();
-		TextComponentString ret = new TextComponentString(String.format("\u00A7%x", color.getColorIndex()));
-		ret.appendText(message);
+		TextComponentString ret = new TextComponentString(message);
+		ret.setStyle((new Style()).setColor(color));
 		return ret;
 	}
 }
