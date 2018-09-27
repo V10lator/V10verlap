@@ -7,9 +7,9 @@ import net.minecraftforge.common.config.Property;
 
 public class V10verlapConfigHandler extends Thread {
 	private boolean running = true;
-	private V10verlap mod;
-	private Configuration config;
-	private AtomicBoolean lock = new AtomicBoolean(false);
+	private final V10verlap mod;
+	private final Configuration config;
+	private final AtomicBoolean lock = new AtomicBoolean(false);
 	
 	V10verlapConfigHandler(V10verlap mod, Configuration config)
 	{
@@ -63,6 +63,14 @@ public class V10verlapConfigHandler extends Thread {
 	
 	private void reloadConfig()
 	{
+		while(!lock.compareAndSet(false, true))
+		{
+			try
+			{
+				Thread.sleep(1L);
+			}
+			catch (InterruptedException e) {}
+		}
 		config.load();
 		double version = config.get(Configuration.CATEGORY_GENERAL, "version", 0.0D).getDouble();
 		if(version < 1.0D) // Transform respectNetherScale to custom scale
@@ -81,6 +89,7 @@ public class V10verlapConfigHandler extends Thread {
 		mod.relativeToSpawn = config.get(Configuration.CATEGORY_GENERAL, "relativeToSpawn", false).getBoolean();
 		if(config.hasChanged())
 			config.save();
+		releaseLock();
 	}
 	
 	public Configuration getLockedConfig()
