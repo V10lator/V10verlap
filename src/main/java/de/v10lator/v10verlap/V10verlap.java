@@ -21,6 +21,7 @@ package de.v10lator.v10verlap;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -29,6 +30,7 @@ import org.apache.logging.log4j.LogManager;
 
 import de.v10lator.v10verlap.api.Hooks;
 import de.v10lator.v10verlap.api.V10verlapException;
+import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -69,6 +71,7 @@ public class V10verlap {
 	public V10verlapConfigHandler configManager;
 	private final ArrayList<TeleportMetadata> metaData = new ArrayList<TeleportMetadata>();
 	private File saveFile;
+	final HashSet<Integer> whitelist = new HashSet<Integer>();
 	
 	@Mod.EventHandler
     public void onPreInit(FMLPreInitializationEvent event) {
@@ -289,13 +292,26 @@ public class V10verlap {
 				if(down && noFallDamage)
 					data.setBoolean(ENTITY_FALL_TAG, false);
 				
-				if(!down && placeClimbBlock > 0 && entity instanceof EntityPlayerMP)
+				if(entity instanceof EntityPlayerMP)
 				{
-					pos = new BlockPos(x, y, z).down();
-					if(ws.isAirBlock(pos))
+					if(!whitelist.isEmpty())
 					{
-						ws.setBlockState(pos, Blocks.GLASS.getDefaultState());
-						blocks.put(new V10verlapBlock(to, pos), placeClimbBlock);
+						pos = new BlockPos(x, y, z);
+						if(whitelist.contains(Block.getIdFromBlock(ws.getBlockState(pos).getBlock())))
+							ws.setBlockState(pos, Blocks.AIR.getDefaultState());
+						pos = pos.up();
+						if(whitelist.contains(Block.getIdFromBlock(ws.getBlockState(pos).getBlock())))
+							ws.setBlockState(pos, Blocks.AIR.getDefaultState());
+					}
+					
+					if(!down && placeClimbBlock > 0)
+					{
+						pos = new BlockPos(x, y, z).down();
+						if(ws.isAirBlock(pos))
+						{
+							ws.setBlockState(pos, Blocks.GLASS.getDefaultState());
+							blocks.put(new V10verlapBlock(to, pos), placeClimbBlock);
+						}
 					}
 				}
 				

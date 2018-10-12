@@ -2,8 +2,13 @@ package de.v10lator.v10verlap;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.logging.log4j.LogManager;
+
+import net.minecraft.block.Block;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 public class V10verlapConfigHandler extends Thread {
 	private boolean running = true;
@@ -87,6 +92,18 @@ public class V10verlapConfigHandler extends Thread {
 		mod.placeClimbBlock = config.get(Configuration.CATEGORY_GENERAL, "placeClimbBlock", 30).getInt() * 20;
 		mod.noFallDamage = config.get(Configuration.CATEGORY_GENERAL, "noFallDamage", true).getBoolean();
 		mod.relativeToSpawn = config.get(Configuration.CATEGORY_GENERAL, "relativeToSpawn", false).getBoolean();
+		mod.whitelist.clear();
+		Block block;
+		for(String mat: config.get(Configuration.CATEGORY_GENERAL, "blockWhitelist", new String[] {"minecraft:stone", "minecraft:bedrock", "minecraft:netherrack"}).getStringList())
+		{
+			block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(mat));
+			if(block == null)
+			{
+				LogManager.getLogger("##NAME##").error("Invalid ID in whitelist: " + mat);
+				continue;
+			}
+			mod.whitelist.add(Block.getIdFromBlock(block));
+		}
 		if(config.hasChanged())
 			config.save();
 		releaseLock();
