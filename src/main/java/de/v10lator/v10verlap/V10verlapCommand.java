@@ -54,6 +54,11 @@ public class V10verlapCommand extends CommandBase {
 		return sender instanceof EntityPlayer ? PermissionAPI.hasPermission((EntityPlayer) sender, mod.permNode) : true;
 	}
 	
+	private int parseDim(String dim) throws NumberFormatException
+	{
+		return Integer.parseInt(dim.toUpperCase().startsWith("DIM") ? dim.substring(3) : dim);
+	}
+	
 	private void changeBoolConf(String key, ICommandSender sender, String[] args)
 	{
 		if(args.length != 2)
@@ -82,11 +87,10 @@ public class V10verlapCommand extends CommandBase {
 			sender.sendMessage(makeMessage(TextFormatting.RED, "/v10verlap link <upperDimension> <lowerDimension> <maxHeight> <minHeight>"));
 			return;
 		}
-		args[1] = args[1].toUpperCase();
 		int dimA;
 		try
 		{
-			dimA = Integer.parseInt(args[1].startsWith("DIM") ? args[1].substring(3) : args[1]);
+			dimA = parseDim(args[1]);
 		}
 		catch(NumberFormatException e)
 		{
@@ -98,11 +102,10 @@ public class V10verlapCommand extends CommandBase {
 			sender.sendMessage(makeMessage(TextFormatting.RED, "Invalid dimension: " + args[1]));
 			return;
 		}
-		args[2] = args[2].toUpperCase();
 		int dimB;
 		try
 		{
-			dimB = Integer.parseInt(args[2].startsWith("DIM") ? args[2].substring(2) : args[2]);
+			dimB = parseDim(args[2]);
 		}
 		catch(NumberFormatException e)
 		{
@@ -155,22 +158,20 @@ public class V10verlapCommand extends CommandBase {
 			return;
 		}
 		
-		args[1] = args[1].toUpperCase();
 		int dimA;
 		try
 		{
-			dimA = Integer.parseInt(args[1].startsWith("DIM") ? args[1].substring(3) : args[1]);
+			dimA = parseDim(args[1]);
 		}
 		catch(NumberFormatException e)
 		{
 			sender.sendMessage(makeMessage(TextFormatting.RED, "Invalid dimension: " + args[1]));
 			return;
 		}
-		args[2] = args[2].toUpperCase();
 		int dimB;
 		try
 		{
-			dimB = Integer.parseInt(args[2].startsWith("DIM") ? args[2].substring(2) : args[2]);
+			dimB = parseDim(args[2]);
 		}
 		catch(NumberFormatException e)
 		{
@@ -228,6 +229,7 @@ public class V10verlapCommand extends CommandBase {
 		if(value == nv)
 		{
 			sender.sendMessage(makeMessage(TextFormatting.RED, "No change!"));
+			mod.configManager.releaseLock();
 			return;
 		}
 		prop.set(nv);
@@ -254,7 +256,7 @@ public class V10verlapCommand extends CommandBase {
 			scales = args[2];
 			try
 			{
-				dim = Integer.parseInt(args[1]);
+				dim = parseDim(args[1]);
 			}
 			catch(NumberFormatException e)
 			{
