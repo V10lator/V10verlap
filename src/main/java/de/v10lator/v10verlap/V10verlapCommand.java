@@ -67,6 +67,7 @@ public class V10verlapCommand extends CommandBase {
 		if(value == nv)
 		{
 			sender.sendMessage(makeMessage(TextFormatting.RED, "No change!"));
+			mod.configManager.releaseLock();
 			return;
 		}
 		prop.set(nv);
