@@ -22,10 +22,10 @@ import net.minecraft.entity.Entity;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.World;
 
-public class V10verlapTeleporter extends Teleporter {
+class V10verlapTeleporter extends Teleporter {
 	private final V10verlap.TeleportMetadata meta;
 	
-	public V10verlapTeleporter(V10verlap.TeleportMetadata meta) {
+	V10verlapTeleporter(V10verlap.TeleportMetadata meta) {
 		super(meta.to);
 		this.meta = meta;
 	}

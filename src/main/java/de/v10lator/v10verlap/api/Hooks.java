@@ -28,7 +28,6 @@ public class Hooks
 	
 	private static final NotConfiguredException nce = new NotConfiguredException();
 	private static final NotLinkedException nle = new NotLinkedException();
-	private static final ConfigurationErrorException cee = new ConfigurationErrorException();
 
 	/** This is a internal function - DO NOT USE!
 	 * 

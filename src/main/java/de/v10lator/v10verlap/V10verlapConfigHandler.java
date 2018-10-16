@@ -27,18 +27,12 @@ public class V10verlapConfigHandler extends Thread {
 	{
 		running = false;
 		this.interrupt();
-		while(!lock.compareAndSet(false, true))
-		{
-			try
-			{
-				Thread.sleep(1L);
-			}
-			catch (InterruptedException e) {}
-		}
+		getLockedConfig();
 		if(config.hasChanged())
 			config.save();
 	}
 	
+	@Override
 	public void run()
 	{
 		while(running)
@@ -68,14 +62,7 @@ public class V10verlapConfigHandler extends Thread {
 	
 	private void reloadConfig()
 	{
-		while(!lock.compareAndSet(false, true))
-		{
-			try
-			{
-				Thread.sleep(1L);
-			}
-			catch (InterruptedException e) {}
-		}
+		getLockedConfig();
 		config.load();
 		double version = config.get(Configuration.CATEGORY_GENERAL, "version", 0.0D).getDouble();
 		if(version < 1.0D) // Transform respectNetherScale to custom scale
