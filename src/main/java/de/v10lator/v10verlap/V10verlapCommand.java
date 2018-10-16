@@ -227,15 +227,13 @@ public class V10verlapCommand extends CommandBase {
 			sender.sendMessage(makeMessage(TextFormatting.RED, "Invalid seconds: " + args[1]));
 			return;
 		}
-		Property prop = mod.configManager.getLockedConfig().get(Configuration.CATEGORY_GENERAL, "placeClimbBlock", 0);
-		int value = prop.getInt();
-		if(value == nv)
+		if(mod.placeClimbBlock == nv)
 		{
 			sender.sendMessage(makeMessage(TextFormatting.RED, "No change!"));
-			mod.configManager.releaseLock();
 			return;
 		}
-		prop.set(nv);
+		mod.placeClimbBlock = nv;
+		mod.configManager.getLockedConfig().get(Configuration.CATEGORY_GENERAL, "placeClimbBlock", 0).set(nv);
 		mod.configManager.releaseLock();
 		sender.sendMessage(makeMessage(TextFormatting.GREEN, nv == 0 ? "Disabled tmp block spawning!" : "Set tmp block live time to " + nv + " seconds!"));
 	}
