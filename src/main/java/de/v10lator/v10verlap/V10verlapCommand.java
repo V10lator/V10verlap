@@ -18,6 +18,8 @@
 
 package de.v10lator.v10verlap;
 
+import java.lang.reflect.Field;
+
 import de.v10lator.v10verlap.api.Hooks;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
@@ -67,15 +69,16 @@ public class V10verlapCommand extends CommandBase {
 			return;
 		}
 		boolean nv = Boolean.parseBoolean(args[1]);
-		Property prop = mod.configManager.getLockedConfig().get(Configuration.CATEGORY_GENERAL, key, false);
-		boolean value = prop.getBoolean();
-		if(value == nv)
-		{
-			sender.sendMessage(makeMessage(TextFormatting.RED, "No change!"));
-			mod.configManager.releaseLock();
-			return;
-		}
-		prop.set(nv);
+		try {
+			Field f = mod.getClass().getDeclaredField(key);
+			if(f.getBoolean(mod) == nv)
+			{
+				sender.sendMessage(makeMessage(TextFormatting.RED, "No change!"));
+				return;
+			}
+			f.setBoolean(mod, nv);
+		} catch (Exception e) {} // Should never happen
+		mod.configManager.getLockedConfig().get(Configuration.CATEGORY_GENERAL, key, false).set(nv);
 		mod.configManager.releaseLock();
 		sender.sendMessage(makeMessage(TextFormatting.GREEN, "Set " + key + " to " + nv + "!"));
 	}
