@@ -92,6 +92,7 @@ public class V10verlapConfigHandler extends Thread {
 		mod.placeClimbBlock = config.get(Configuration.CATEGORY_GENERAL, "placeClimbBlock", 30).getInt() * 20;
 		mod.noFallDamage = config.get(Configuration.CATEGORY_GENERAL, "noFallDamage", true).getBoolean();
 		mod.relativeToSpawn = config.get(Configuration.CATEGORY_GENERAL, "relativeToSpawn", false).getBoolean();
+		mod.playerOnly = config.get(Configuration.CATEGORY_GENERAL, "playerOnly", false).getBoolean();
 		mod.whitelist.clear();
 		Block block;
 		for(String mat: config.get(Configuration.CATEGORY_GENERAL, "blockWhitelist", new String[] {"minecraft:stone", "minecraft:bedrock", "minecraft:netherrack"}).getStringList())

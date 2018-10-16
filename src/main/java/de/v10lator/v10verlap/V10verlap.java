@@ -65,7 +65,7 @@ import net.minecraftforge.server.permission.PermissionAPI;
 public class V10verlap {
 	private final HashMap<V10verlapBlock, Integer> blocks = new HashMap<V10verlapBlock, Integer>();
 	private final String ENTITY_FALL_TAG = "##MODID##.noFallDamage";
-	boolean noFallDamage, relativeToSpawn, transformNetherScale = true;
+	boolean noFallDamage, relativeToSpawn, transformNetherScale = true, playerOnly;
 	int placeClimbBlock;
 	final String permNode = "##MODID##.command";
 	public V10verlapConfigHandler configManager;
@@ -200,7 +200,7 @@ public class V10verlap {
 			
 			oldWorldSpawnPos = dimension.getSpawnPoint();
 			oldScale = Hooks.getScale(worldId);
-			for(Entity entity: dimension.loadedEntityList)
+			for(Entity entity: playerOnly ? dimension.playerEntities : dimension.loadedEntityList)
 			{
 				data = entity.getEntityData();
 				if(noFallDamage && data.hasKey(ENTITY_FALL_TAG))
@@ -211,7 +211,7 @@ public class V10verlap {
 						data.removeTag(ENTITY_FALL_TAG);
 				}
 				
-				if((!lowerAvail && !upperAvail) || entity.isDead || entity.isRiding())
+				if((!lowerAvail && !upperAvail) || entity.isDead || entity.isRiding() || (playerOnly && entity.isBeingRidden()))
 					continue;
 				
 				y = entity.posY;
@@ -332,6 +332,12 @@ public class V10verlap {
 	
 	private void teleport(TeleportMetadata meta, MinecraftServer ms)
 	{
+		if(playerOnly)
+		{
+			ms.getPlayerList().transferPlayerToDimension((EntityPlayerMP)meta.entity, meta.to.provider.getDimension(), new V10verlapTeleporter(meta));
+			return;
+		}
+		
 		List<Entity> passengers = meta.entity.getPassengers();
 		if(!passengers.isEmpty())
 		{

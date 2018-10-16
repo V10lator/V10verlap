@@ -321,6 +321,10 @@ public class V10verlapCommand extends CommandBase {
 			case "scale":
 				setScale(server, sender, args);
 				break;
+			case "playeronly":
+			case "po":
+				changeBoolConf("playerOnly", sender, args);
+				break;
 			default:
 				sender.sendMessage(makeMessage(TextFormatting.RED, getUsage(sender)));
 				break;
