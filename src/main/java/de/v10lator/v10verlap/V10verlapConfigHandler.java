@@ -15,6 +15,13 @@ public class V10verlapConfigHandler extends Thread {
 	private final V10verlap mod;
 	private final Configuration config;
 	private final AtomicBoolean lock = new AtomicBoolean(false);
+	private final String[] defaultWhitelist = new String[] {
+			"minecraft:stone",
+			"minecraft:bedrock",
+			"minecraft:netherrack",
+			"minecraft:water",
+			"minecraft:lava"
+		};
 	
 	V10verlapConfigHandler(V10verlap mod, Configuration config)
 	{
@@ -82,7 +89,7 @@ public class V10verlapConfigHandler extends Thread {
 		mod.playerOnly = config.get(Configuration.CATEGORY_GENERAL, "playerOnly", false).getBoolean();
 		mod.whitelist.clear();
 		Block block;
-		for(String mat: config.get(Configuration.CATEGORY_GENERAL, "blockWhitelist", new String[] {"minecraft:stone", "minecraft:bedrock", "minecraft:netherrack"}).getStringList())
+		for(String mat: config.get(Configuration.CATEGORY_GENERAL, "blockWhitelist", defaultWhitelist).getStringList())
 		{
 			block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(mat));
 			if(block == null)
