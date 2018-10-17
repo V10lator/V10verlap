@@ -20,16 +20,20 @@ package de.v10lator.v10verlap;
 
 import java.util.UUID;
 
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 
 class V10verlapBlock {
 	final int dim;
 	final BlockPos pos;
+	final IBlockState oldState;
 	
-	V10verlapBlock(int dim, BlockPos pos)
+	V10verlapBlock(int dim, BlockPos pos, IBlockState oldState)
 	{
 		this.pos = pos;
 		this.dim = dim;
+		this.oldState = oldState;
 	}
 
 	@Override

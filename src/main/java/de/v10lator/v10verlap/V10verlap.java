@@ -31,7 +31,10 @@ import org.apache.logging.log4j.LogManager;
 import de.v10lator.v10verlap.api.Hooks;
 import de.v10lator.v10verlap.api.V10verlapException;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockFalling;
+import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
@@ -127,8 +130,7 @@ public class V10verlap {
 	@SubscribeEvent
 	public void onBlockChange(BlockEvent.BreakEvent event)
 	{
-		World ws = event.getWorld();
-		V10verlapBlock block = new V10verlapBlock(ws.provider.getDimension(), event.getPos());
+		V10verlapBlock block = new V10verlapBlock(event.getWorld().provider.getDimension(), event.getPos(), null);
 		if(blocks.containsKey(block))
 			blocks.remove(block);
 	}
@@ -297,21 +299,25 @@ public class V10verlap {
 					if(!whitelist.isEmpty())
 					{
 						pos = new BlockPos(x, y, z);
-						if(whitelist.contains(Block.getIdFromBlock(ws.getBlockState(pos).getBlock())))
-							ws.setBlockState(pos, Blocks.AIR.getDefaultState());
+						checkWhitelist(ws, pos);
 						pos = pos.up();
-						if(whitelist.contains(Block.getIdFromBlock(ws.getBlockState(pos).getBlock())))
-							ws.setBlockState(pos, Blocks.AIR.getDefaultState());
+						if(placeClimbBlock > 0 && (checkWhitelist(ws, pos) || ws.isAirBlock(pos)))
+						{
+							pos = pos.up();
+							if(!whitelistSideCheck(ws, pos))
+							{
+								IBlockState bs = ws.getBlockState(pos);
+								if(bs.getBlock() instanceof BlockFalling)
+									placeTmpBlock(ws, pos, bs);
+							}
+						}
 					}
 					
 					if(!down && placeClimbBlock > 0)
 					{
 						pos = new BlockPos(x, y, z).down();
 						if(ws.isAirBlock(pos))
-						{
-							ws.setBlockState(pos, Blocks.GLASS.getDefaultState());
-							blocks.put(new V10verlapBlock(to, pos), placeClimbBlock);
-						}
+							placeTmpBlock(ws, pos, Blocks.AIR.getDefaultState());
 					}
 				}
 				
@@ -323,11 +329,46 @@ public class V10verlap {
 		metaData.clear();
 	}
 	
+	private void placeTmpBlock(WorldServer world, BlockPos pos, IBlockState oldState)
+	{
+		world.setBlockState(pos, Blocks.GLASS.getDefaultState());
+		blocks.put(new V10verlapBlock(world.provider.getDimension(), pos, oldState), placeClimbBlock);
+	}
+	
+	private boolean checkWhitelist(WorldServer world, BlockPos pos)
+	{
+		boolean ret = false;
+		if(whitelist.contains(Block.getIdFromBlock(world.getBlockState(pos).getBlock())))
+		{
+			world.setBlockState(pos, Blocks.AIR.getDefaultState());
+			ret = true;
+		}
+		if(placeClimbBlock > 0 && (ret || world.isAirBlock(pos)))
+		{
+			whitelistSideCheck(world, pos.north());
+			whitelistSideCheck(world, pos.east());
+			whitelistSideCheck(world, pos.south());
+			whitelistSideCheck(world, pos.west());
+		}
+		return ret;
+	}
+	
+	private boolean whitelistSideCheck(WorldServer world, BlockPos pos)
+	{
+		IBlockState bs = world.getBlockState(pos);
+		if(bs.getBlock() instanceof BlockLiquid)
+		{
+			placeTmpBlock(world, pos, bs);
+			return true;
+		}
+		return false;
+	}
+	
 	private void resetBlock(MinecraftServer ms, V10verlapBlock block)
 	{
 		WorldServer ws = ms.getWorld(block.dim);
 		if(ws.getBlockState(block.pos).getMaterial() == Material.GLASS)
-			ws.setBlockState(block.pos, Blocks.AIR.getDefaultState());
+			ws.setBlockState(block.pos, block.oldState);
 	}
 	
 	private void teleport(TeleportMetadata meta, MinecraftServer ms)
