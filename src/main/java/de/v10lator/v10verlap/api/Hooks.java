@@ -167,6 +167,9 @@ public class Hooks
 	 */
 	public static double getScale(int world) throws NotConfiguredException
 	{
+		if(plugin.scaleCache.containsKey(world))
+			return plugin.scaleCache.get(world);
+		
 		String worldName = Integer.toString(world);
 		Configuration config = plugin.configManager.getLockedConfig();
 		if(!config.hasCategory(worldName) || !config.hasKey(worldName, "scale"))
@@ -176,6 +179,7 @@ public class Hooks
 		}
 		double ret = config.get(worldName, "scale", 1.0D).getDouble();
 		plugin.configManager.releaseLock();
+		plugin.scaleCache.put(world, ret);
 		return ret;
 	}
 }

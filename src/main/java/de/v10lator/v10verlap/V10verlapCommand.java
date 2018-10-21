@@ -207,6 +207,10 @@ public class V10verlapCommand extends CommandBase {
 		propB.set("none");
 		
 		mod.configManager.releaseLock();
+		
+		mod.scaleCache.remove(dimA);
+		mod.scaleCache.remove(dimB);
+		
 		sender.sendMessage(makeMessage(TextFormatting.GREEN, "Dimensions unlinked!"));
 	}
 	
@@ -285,6 +289,7 @@ public class V10verlapCommand extends CommandBase {
 			sender.sendMessage(makeMessage(TextFormatting.RED, "No change!"));
 			return;
 		}
+		mod.scaleCache.put(dim, scale);
 		mod.configManager.getLockedConfig().get(Integer.toString(dim), "scale", 1.0D).set(scale);
 		mod.configManager.releaseLock();
 		sender.sendMessage(makeMessage(TextFormatting.GREEN, "New scale for DIM" + Integer.toString(dim) + ": " + Double.toString(scale)));

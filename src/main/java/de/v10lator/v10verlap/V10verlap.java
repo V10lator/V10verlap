@@ -75,6 +75,7 @@ public class V10verlap {
 	private final ArrayList<TeleportMetadata> metaData = new ArrayList<TeleportMetadata>();
 	private File saveFile;
 	final HashSet<Integer> whitelist = new HashSet<Integer>();
+	public final HashMap<Integer, Double> scaleCache = new HashMap<Integer, Double>();
 	
 	@Mod.EventHandler
     public void onPreInit(FMLPreInitializationEvent event) {
