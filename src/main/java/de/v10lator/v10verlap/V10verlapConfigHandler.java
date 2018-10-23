@@ -16,11 +16,24 @@ public class V10verlapConfigHandler extends Thread {
 	private final Configuration config;
 	private final AtomicBoolean lock = new AtomicBoolean(false);
 	private final String[] defaultWhitelist = new String[] {
-			"minecraft:stone",
+			"minecraft:stone@0",
 			"minecraft:bedrock",
 			"minecraft:netherrack",
 			"minecraft:water",
-			"minecraft:lava"
+			"minecraft:lava",
+			"minecraft:coal_ore",
+			"minecraft:iron_ore",
+			"minecraft:lapis_ore",
+			"minecraft:gold_ore",
+			"minecraft:diamond_ore",
+			"minecraft:redstone_ore",
+			"minecraft:emerald_ore",
+			"minecraft:stone@3",
+			"minecraft:gravel",
+			"minecraft:stone@1",
+			"minecraft:dirt@0",
+			"minecraft:stone@5",
+			"minecraft:cobblestone@0"
 		};
 	
 	V10verlapConfigHandler(V10verlap mod, Configuration config)
@@ -88,16 +101,47 @@ public class V10verlapConfigHandler extends Thread {
 		mod.relativeToSpawn = config.get(Configuration.CATEGORY_GENERAL, "relativeToSpawn", false).getBoolean();
 		mod.playerOnly = config.get(Configuration.CATEGORY_GENERAL, "playerOnly", false).getBoolean();
 		mod.whitelist.clear();
-		Block block;
+		int seperator, meta, id;
+		boolean[] mask;
+		ResourceLocation key;
 		for(String mat: config.get(Configuration.CATEGORY_GENERAL, "blockWhitelist", defaultWhitelist).getStringList())
 		{
-			block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(mat));
-			if(block == null)
+			seperator = mat.indexOf('@');
+			if(seperator > 0)
+			{
+				try
+				{
+					meta = Integer.parseInt(mat.substring(seperator + 1));
+				}
+				catch(NumberFormatException e)
+				{
+					LogManager.getLogger("##NAME##").error("Invalid metadata in whitelist: " + mat.substring(seperator + 1));
+					continue;
+				}
+				mat = mat.substring(0, seperator);
+			}
+			else
+				meta = -1;
+			
+			key = new ResourceLocation(mat);
+			if(!ForgeRegistries.BLOCKS.containsKey(key))
 			{
 				LogManager.getLogger("##NAME##").error("Invalid ID in whitelist: " + mat);
 				continue;
 			}
-			mod.whitelist.add(Block.getIdFromBlock(block));
+			
+			id = Block.getIdFromBlock(ForgeRegistries.BLOCKS.getValue(key));
+			
+			if(meta == -1)
+				mod.whitelist.put(id, null);
+			else
+			{
+				mask = mod.whitelist.get(id);
+				if(mask == null)
+					mask = new boolean[16];
+				mask[meta] = true;
+				mod.whitelist.put(id, mask);
+			}
 		}
 		if(config.hasChanged())
 			config.save();

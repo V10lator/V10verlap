@@ -21,7 +21,6 @@ package de.v10lator.v10verlap;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -74,7 +73,7 @@ public class V10verlap {
 	public V10verlapConfigHandler configManager;
 	private final ArrayList<TeleportMetadata> metaData = new ArrayList<TeleportMetadata>();
 	private File saveFile;
-	final HashSet<Integer> whitelist = new HashSet<Integer>();
+	final HashMap<Integer, boolean[]> whitelist = new HashMap<Integer, boolean[]>();
 	public final HashMap<Integer, Double> scaleCache = new HashMap<Integer, Double>();
 	
 	@Mod.EventHandler
@@ -339,10 +338,22 @@ public class V10verlap {
 	private boolean checkWhitelist(WorldServer world, BlockPos pos)
 	{
 		boolean ret = false;
-		if(whitelist.contains(Block.getIdFromBlock(world.getBlockState(pos).getBlock())))
+		IBlockState bs = world.getBlockState(pos);
+		Block block = bs.getBlock();
+		int id = Block.getIdFromBlock(block);
+		if(whitelist.containsKey(id))
 		{
-			world.setBlockState(pos, Blocks.AIR.getDefaultState());
-			ret = true;
+			boolean[] mask = whitelist.get(id);
+			if(mask != null)
+			{
+				if(mask[block.getMetaFromState(bs)])
+					ret = true;
+			}
+			else
+				ret = true;
+			
+			if(ret)
+				world.setBlockState(pos, Blocks.AIR.getDefaultState());
 		}
 		if(placeClimbBlock > 0 && (ret || world.isAirBlock(pos)))
 		{
