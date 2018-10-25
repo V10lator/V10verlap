@@ -68,7 +68,7 @@ public class V10verlap {
 	private final HashMap<V10verlapBlock, Integer> blocks = new HashMap<V10verlapBlock, Integer>();
 	private final String ENTITY_FALL_TAG = "##MODID##.noFallDamage";
 	boolean noFallDamage, relativeToSpawn, transformNetherScale = true, playerOnly;
-	int placeClimbBlock;
+	int placeTmpBlocks;
 	final String permNode = "##MODID##.command";
 	public V10verlapConfigHandler configManager;
 	private final ArrayList<TeleportMetadata> metaData = new ArrayList<TeleportMetadata>();
@@ -301,7 +301,7 @@ public class V10verlap {
 						pos = new BlockPos(x, y, z);
 						checkWhitelist(ws, pos);
 						pos = pos.up();
-						if(placeClimbBlock > 0 && (checkWhitelist(ws, pos) || ws.isAirBlock(pos)))
+						if(placeTmpBlocks > 0 && (checkWhitelist(ws, pos) || ws.isAirBlock(pos)))
 						{
 							pos = pos.up();
 							if(!whitelistSideCheck(ws, pos))
@@ -313,7 +313,7 @@ public class V10verlap {
 						}
 					}
 					
-					if(!down && placeClimbBlock > 0)
+					if(!down && placeTmpBlocks > 0)
 					{
 						pos = new BlockPos(x, y, z).down();
 						if(ws.isAirBlock(pos))
@@ -332,7 +332,7 @@ public class V10verlap {
 	private void placeTmpBlock(WorldServer world, BlockPos pos, IBlockState oldState)
 	{
 		world.setBlockState(pos, Blocks.GLASS.getDefaultState());
-		blocks.put(new V10verlapBlock(world.provider.getDimension(), pos, oldState), placeClimbBlock);
+		blocks.put(new V10verlapBlock(world.provider.getDimension(), pos, oldState), placeTmpBlocks);
 	}
 	
 	private boolean checkWhitelist(WorldServer world, BlockPos pos)
@@ -355,7 +355,7 @@ public class V10verlap {
 			if(ret)
 				world.setBlockState(pos, Blocks.AIR.getDefaultState());
 		}
-		if(placeClimbBlock > 0 && (ret || world.isAirBlock(pos)))
+		if(placeTmpBlocks > 0 && (ret || world.isAirBlock(pos)))
 		{
 			whitelistSideCheck(world, pos.north());
 			whitelistSideCheck(world, pos.east());

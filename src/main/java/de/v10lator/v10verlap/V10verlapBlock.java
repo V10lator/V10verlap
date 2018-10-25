@@ -21,7 +21,6 @@ package de.v10lator.v10verlap;
 import java.util.UUID;
 
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 
 class V10verlapBlock {

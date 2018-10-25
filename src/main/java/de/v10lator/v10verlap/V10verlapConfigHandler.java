@@ -85,18 +85,25 @@ public class V10verlapConfigHandler extends Thread {
 		getLockedConfig();
 		config.load();
 		double version = config.get(Configuration.CATEGORY_GENERAL, "version", 0.0D).getDouble();
-		if(version < 1.0D) // Transform respectNetherScale to custom scale
+		if(version < 2.D)
 		{
-			if(config.hasKey(Configuration.CATEGORY_GENERAL, "respectNetherScale"))
+			if(version < 1.0D) // Transform respectNetherScale to custom scale
 			{
-				Property prop = config.get(Configuration.CATEGORY_GENERAL, "respectNetherScale", false);
-				mod.transformNetherScale = prop.getBoolean();
-				config.getCategory(Configuration.CATEGORY_GENERAL).remove("respectNetherScale");
-				config.get(Configuration.CATEGORY_GENERAL, "version", 0.0D).set(1.0D);
+				if(config.hasKey(Configuration.CATEGORY_GENERAL, "respectNetherScale"))
+				{
+					Property prop = config.get(Configuration.CATEGORY_GENERAL, "respectNetherScale", false);
+					mod.transformNetherScale = prop.getBoolean();
+					config.getCategory(Configuration.CATEGORY_GENERAL).remove("respectNetherScale");
+				}
 			}
-			config.get(Configuration.CATEGORY_GENERAL, "version", 1.0D).set(1.0D);
+			if(config.hasKey(Configuration.CATEGORY_GENERAL, "placeClimbBlock")) // Transform placeClimbBlock to placeTmpBlocks
+			{
+				config.get(Configuration.CATEGORY_GENERAL, "placeTmpBlocks", 30).set(config.get(Configuration.CATEGORY_GENERAL, "placeClimbBlock", 30).getInt());
+				config.getCategory(Configuration.CATEGORY_GENERAL).remove("placeClimbBlock");
+			}
+			config.get(Configuration.CATEGORY_GENERAL, "version", 0.0D).set(2.0D);
 		}
-		mod.placeClimbBlock = config.get(Configuration.CATEGORY_GENERAL, "placeClimbBlock", 30).getInt() * 20;
+		mod.placeTmpBlocks = config.get(Configuration.CATEGORY_GENERAL, "placeTmpBlocks", 30).getInt() * 20;
 		mod.noFallDamage = config.get(Configuration.CATEGORY_GENERAL, "noFallDamage", true).getBoolean();
 		mod.relativeToSpawn = config.get(Configuration.CATEGORY_GENERAL, "relativeToSpawn", false).getBoolean();
 		mod.playerOnly = config.get(Configuration.CATEGORY_GENERAL, "playerOnly", false).getBoolean();

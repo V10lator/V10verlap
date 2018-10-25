@@ -218,7 +218,7 @@ public class V10verlapCommand extends CommandBase {
 	{
 		if(args.length != 2)
 		{
-			sender.sendMessage(makeMessage(TextFormatting.RED, "/v10verlap placeClimbBlocks <timeInSeconds>"));
+			sender.sendMessage(makeMessage(TextFormatting.RED, "/v10verlap placeTmpBlocks <timeInSeconds>"));
 			return;
 		}
 		int nv;
@@ -231,13 +231,13 @@ public class V10verlapCommand extends CommandBase {
 			sender.sendMessage(makeMessage(TextFormatting.RED, "Invalid seconds: " + args[1]));
 			return;
 		}
-		if(mod.placeClimbBlock == nv)
+		if(mod.placeTmpBlocks == nv)
 		{
 			sender.sendMessage(makeMessage(TextFormatting.RED, "No change!"));
 			return;
 		}
-		mod.placeClimbBlock = nv;
-		mod.configManager.getLockedConfig().get(Configuration.CATEGORY_GENERAL, "placeClimbBlock", 0).set(nv);
+		mod.placeTmpBlocks = nv;
+		mod.configManager.getLockedConfig().get(Configuration.CATEGORY_GENERAL, "placeTmpBlocks", 0).set(nv);
 		mod.configManager.releaseLock();
 		sender.sendMessage(makeMessage(TextFormatting.GREEN, nv == 0 ? "Disabled tmp block spawning!" : "Set tmp block live time to " + nv + " seconds!"));
 	}
@@ -311,8 +311,8 @@ public class V10verlapCommand extends CommandBase {
 			case "unlink":
 				unlink(server, sender, args);
 				break;
-			case "placeclimbblock":
-			case "pcb":
+			case "placetmpblocks":
+			case "ptb":
 				setTmpBlockTime(sender, args);
 				break;
 			case "nofalldamage":
