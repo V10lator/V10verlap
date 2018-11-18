@@ -4,7 +4,7 @@
     "modid": "de.v10lator.v10verlap",
     "name": "V10verlap",
     "description": "Stack your dimensions",
-    "version": ${version}",
+    "version": "${version}",
     "mcversion": "${mcversion}",
     "authorList": [ "V10lator" ],
     "requiredMods": [ "forge" ],
