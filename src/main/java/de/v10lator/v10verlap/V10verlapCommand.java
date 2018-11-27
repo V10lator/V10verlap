@@ -152,6 +152,8 @@ public class V10verlapCommand extends CommandBase {
 		mod.configManager.releaseLock();
 		mod.lowerCache.put(dimA, dimB);
 		mod.upperCache.put(dimB, dimA);
+		mod.minCache.put(dimA, minY);
+		mod.maxCache.put(dimB, maxY);
 		sender.sendMessage(makeMessage(TextFormatting.GREEN, "Dimensions linked!"));
 	}
 	
@@ -216,6 +218,10 @@ public class V10verlapCommand extends CommandBase {
 		mod.lowerCache.remove(dimB);
 		mod.upperCache.remove(dimA);
 		mod.upperCache.remove(dimB);
+		mod.minCache.remove(dimA);
+		mod.minCache.remove(dimB);
+		mod.maxCache.remove(dimA);
+		mod.maxCache.remove(dimB);
 		
 		sender.sendMessage(makeMessage(TextFormatting.GREEN, "Dimensions unlinked!"));
 	}

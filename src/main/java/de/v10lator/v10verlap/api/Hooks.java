@@ -66,9 +66,13 @@ public class Hooks
 	 */
 	public static int getMinY(int world) throws NotLinkedException, ConfigurationErrorException
 	{
+		if(plugin.minCache.containsKey(world))
+			return plugin.minCache.get(world);
+		
 		Hooks.getLowerWorld(world);
 		int ret = plugin.configManager.getLockedConfig().get(Integer.toString(world), "minY", 0).getInt();
 		plugin.configManager.releaseLock();
+		plugin.minCache.put(world, ret);
 		return ret;
 	}
 
@@ -79,9 +83,13 @@ public class Hooks
 	 */
 	public static int getMaxY(int world) throws NotLinkedException, ConfigurationErrorException
 	{
+		if(plugin.maxCache.containsKey(world))
+			return plugin.maxCache.get(world);
+		
 		Hooks.getUpperWorld(world);
 		int ret = plugin.configManager.getLockedConfig().get(Integer.toString(world), "maxY", 128).getInt();
 		plugin.configManager.releaseLock();
+		plugin.maxCache.put(world, ret);
 		return ret;
 	}
 	
@@ -92,7 +100,7 @@ public class Hooks
 	 */
 	public static int getUpperWorld(int world) throws NotLinkedException, ConfigurationErrorException
 	{
-		if(plugin.lowerCache.containsKey(world))
+		if(plugin.upperCache.containsKey(world))
 		{
 			Integer ret = plugin.upperCache.get(world);
 			if(ret == null)

@@ -19,8 +19,6 @@
 package de.v10lator.v10verlap;
 
 import java.io.File;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -43,6 +41,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
@@ -61,6 +60,7 @@ import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.WorldTickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.server.permission.DefaultPermissionLevel;
 import net.minecraftforge.server.permission.PermissionAPI;
@@ -80,6 +80,8 @@ public class V10verlap {
 	public final HashMap<Integer, Double> scaleCache = new HashMap<Integer, Double>();
 	public final HashMap<Integer, Integer> lowerCache = new HashMap<Integer, Integer>();
 	public final HashMap<Integer, Integer> upperCache = new HashMap<Integer, Integer>();
+	public final HashMap<Integer, Integer> minCache = new HashMap<Integer, Integer>();
+	public final HashMap<Integer, Integer> maxCache = new HashMap<Integer, Integer>();
 	public MinecraftServer server;
 	
 	@Mod.EventHandler
@@ -154,7 +156,177 @@ public class V10verlap {
 	}
 	
 	@SubscribeEvent
-	public void onTick(ServerTickEvent event) {
+	public void onWorldTick(WorldTickEvent event)
+	{
+		if(event.phase == TickEvent.Phase.START)
+			return;
+		
+		int worldId = event.world.provider.getDimension();
+		int lower = 0, upper = 0, minY = 0, maxY = 0;
+		boolean down, lowerAvail, upperAvail;
+		
+		try
+		{
+			lower = Hooks.getLowerWorld(worldId);
+			minY = Hooks.getMinY(worldId);
+			lowerAvail = true;
+		}
+		catch(V10verlapException e)
+		{
+			lowerAvail = false;
+		}
+		try
+		{
+			upper = Hooks.getUpperWorld(worldId);
+			maxY = Hooks.getMaxY(worldId);
+			upperAvail = true;
+		}
+		catch(V10verlapException e)
+		{
+			upperAvail = false;
+		}
+		
+		BlockPos oldWorldSpawnPos = relativeToSpawn ? event.world.getSpawnPoint() : null;
+		double oldScale = Hooks.getScale(worldId);
+		int to, blockY, oldY;
+		double x, z, newScale;
+		BlockPos pos, newWorldSpawnPos = null;
+		NBTTagCompound data;
+		
+		for(Entity entity: playerOnly ? event.world.playerEntities : event.world.loadedEntityList)
+		{
+			data = entity.getEntityData();
+			if(noFallDamage && data.hasKey(ENTITY_FALL_TAG))
+			{
+				if(entity.onGround)
+					data.setBoolean(ENTITY_FALL_TAG, true);
+				else if(data.getBoolean(ENTITY_FALL_TAG))
+					data.removeTag(ENTITY_FALL_TAG);
+			}
+			
+			if((!lowerAvail && !upperAvail) || entity.isDead || entity.isRiding() || (playerOnly && entity.isBeingRidden()))
+				continue;
+			
+			oldY = data.getInteger(ENTITY_OLD_Y);
+			blockY = MathHelper.floor(entity.posY);
+			if(oldY == blockY)
+				continue;
+			data.setInteger(ENTITY_OLD_Y, blockY);
+			
+			down = oldY > blockY;
+			if(down)
+			{
+				if(lowerAvail && blockY <= minY)
+				{
+					try
+					{
+						blockY = Hooks.getMaxY(lower) - 1;
+					}
+					catch(V10verlapException e)
+					{
+						LogManager.getLogger("##NAME##").error("Invalid link between DIM" + worldId + " and DIM" + lower + ". Canceling teleport!");
+						lowerAvail = false;
+						continue;
+					}
+					to = lower;
+				}
+				else
+					continue;
+			}
+			else if(upperAvail && blockY >= maxY)
+			{
+				try
+				{
+					blockY = Hooks.getMinY(upper) + 1;
+				}
+				catch(V10verlapException e)
+				{
+					LogManager.getLogger("##NAME##").error("Invalid link between DIM" + worldId + " and DIM" + upper + ". Canceling teleport!");
+					upperAvail = false;
+					continue;
+				}
+				to = upper;
+			}
+			else
+				continue;
+			
+			if (!ForgeHooks.onTravelToDimension(entity, to))
+			{
+				LogManager.getLogger("##NAME##").info("Another plugin blocked the teleport from DIM" + worldId + " to DIM" + to);
+				continue;
+			}
+			
+			WorldServer ws = server.getWorld(to);
+			if(ws == null)
+			{
+				LogManager.getLogger("##NAME##").info("Can't load DIM" + to);
+				if(down)
+					lowerAvail = false;
+				else
+					upperAvail = false;
+				continue;
+			}
+			
+			x = entity.posX;
+			z = entity.posZ;
+			if(relativeToSpawn)
+			{
+				newWorldSpawnPos = ws.getSpawnPoint();
+				x -= oldWorldSpawnPos.getX();
+				z -= oldWorldSpawnPos.getZ();
+			}
+			
+			newScale = Hooks.getScale(to);
+			if(oldScale != newScale)
+			{
+				x *= oldScale;
+				z *= oldScale;
+				x /= newScale;
+				z /= newScale;
+			}
+			
+			if(relativeToSpawn)
+			{
+				x += newWorldSpawnPos.getX();
+				z += newWorldSpawnPos.getZ();
+			}
+			
+			if(down && noFallDamage)
+				data.setBoolean(ENTITY_FALL_TAG, false);
+			
+			if(entity instanceof EntityPlayerMP)
+			{
+				if(!whitelist.isEmpty())
+				{
+					pos = new BlockPos(x, blockY, z);
+					checkWhitelist(ws, pos);
+					pos = pos.up();
+					if(placeTmpBlocks > 0 && (checkWhitelist(ws, pos) || ws.isAirBlock(pos)))
+					{
+						pos = pos.up();
+						if(!whitelistSideCheck(ws, pos))
+						{
+							IBlockState bs = ws.getBlockState(pos);
+							if(bs.getBlock() instanceof BlockFalling)
+								placeTmpBlock(ws, pos, bs);
+						}
+					}
+				}
+				
+				if(!down && placeTmpBlocks > 0)
+				{
+					pos = new BlockPos(x, blockY, z).down();
+					if(ws.isAirBlock(pos))
+						placeTmpBlock(ws, pos, Blocks.AIR.getDefaultState());
+				}
+			}
+			
+			metaData.add(new TeleportMetadata(entity, event.world, ws, x, blockY, z));
+		}
+	}
+	
+	@SubscribeEvent
+	public void onServerTick(ServerTickEvent event) {
 		if(event.phase == TickEvent.Phase.START)
 			return;
 		
@@ -176,166 +348,6 @@ public class V10verlap {
 			}
 		}
 		
-		int worldId, lower = 0, upper = 0, to, minY = 0, maxY = 0;
-		BlockPos pos, oldWorldSpawnPos = null, newWorldSpawnPos = null;
-		double x, y, z, oldScale, newScale;
-		BigDecimal scaledY;
-		boolean down, lowerAvail, upperAvail;
-		NBTTagCompound data;
-		for(WorldServer dimension: DimensionManager.getWorlds())
-		{
-			worldId = dimension.provider.getDimension();
-			try
-			{
-				lower = Hooks.getLowerWorld(worldId);
-				minY = Hooks.getMinY(worldId);
-				lowerAvail = true;
-			}
-			catch(V10verlapException e)
-			{
-				lowerAvail = false;
-			}
-			try
-			{
-				upper = Hooks.getUpperWorld(worldId);
-				maxY = Hooks.getMaxY(worldId);
-				upperAvail = true;
-			}
-			catch(V10verlapException e)
-			{
-				upperAvail = false;
-			}
-			
-			if(relativeToSpawn)
-				oldWorldSpawnPos = dimension.getSpawnPoint();
-			oldScale = Hooks.getScale(worldId);
-			for(Entity entity: playerOnly ? dimension.playerEntities : dimension.loadedEntityList)
-			{
-				data = entity.getEntityData();
-				if(noFallDamage && data.hasKey(ENTITY_FALL_TAG))
-				{
-					if(entity.onGround)
-						data.setBoolean(ENTITY_FALL_TAG, true);
-					else if(data.getBoolean(ENTITY_FALL_TAG))
-						data.removeTag(ENTITY_FALL_TAG);
-				}
-				
-				if((!lowerAvail && !upperAvail) || entity.isDead || entity.isRiding() || (playerOnly && entity.isBeingRidden()))
-					continue;
-				
-				y = entity.posY;
-				scaledY = new BigDecimal(y).setScale(1, RoundingMode.HALF_UP);
-				if(data.hasKey(ENTITY_OLD_Y) && new BigDecimal(data.getDouble(ENTITY_OLD_Y)).equals(scaledY))
-					continue;
-				data.setDouble(ENTITY_OLD_Y, scaledY.doubleValue());
-				
-				if(lowerAvail && y <= minY)
-				{
-					try
-					{
-						y = Hooks.getMaxY(lower) - 1;
-					}
-					catch(V10verlapException e)
-					{
-						LogManager.getLogger("##NAME##").error("Invalid link between DIM" + worldId + " and DIM" + lower + ". Canceling teleport!");
-						lowerAvail = false;
-						continue;
-					}
-					to = lower;
-					down = true;
-				}
-				else if(upperAvail && y >= maxY)
-				{
-					try
-					{
-						y = Hooks.getMinY(upper) + 1;
-					}
-					catch(V10verlapException e)
-					{
-						LogManager.getLogger("##NAME##").error("Invalid link between DIM" + worldId + " and DIM" + upper + ". Canceling teleport!");
-						upperAvail = false;
-						continue;
-					}
-					to = upper;
-					down = false;
-				}
-				else
-					continue;
-				
-				if (!ForgeHooks.onTravelToDimension(entity, to))
-				{
-					LogManager.getLogger("##NAME##").info("Another plugin blocked the teleport from DIM" + worldId + " to DIM" + to);
-					continue;
-				}
-				
-				WorldServer ws = server.getWorld(to);
-				if(ws == null)
-				{
-					LogManager.getLogger("##NAME##").info("Can't load DIM" + to);
-					if(down)
-						lowerAvail = false;
-					else
-						upperAvail = false;
-					continue;
-				}
-				
-				x = entity.posX;
-				z = entity.posZ;
-				if(relativeToSpawn)
-				{
-					newWorldSpawnPos = ws.getSpawnPoint();
-					x -= oldWorldSpawnPos.getX();
-					z -= oldWorldSpawnPos.getZ();
-				}
-				
-				newScale = Hooks.getScale(to);
-				if(oldScale != newScale)
-				{
-					x *= oldScale;
-					z *= oldScale;
-					x /= newScale;
-					z /= newScale;
-				}
-				
-				if(relativeToSpawn)
-				{
-					x += newWorldSpawnPos.getX();
-					z += newWorldSpawnPos.getZ();
-				}
-				
-				if(down && noFallDamage)
-					data.setBoolean(ENTITY_FALL_TAG, false);
-				
-				if(entity instanceof EntityPlayerMP)
-				{
-					if(!whitelist.isEmpty())
-					{
-						pos = new BlockPos(x, y, z);
-						checkWhitelist(ws, pos);
-						pos = pos.up();
-						if(placeTmpBlocks > 0 && (checkWhitelist(ws, pos) || ws.isAirBlock(pos)))
-						{
-							pos = pos.up();
-							if(!whitelistSideCheck(ws, pos))
-							{
-								IBlockState bs = ws.getBlockState(pos);
-								if(bs.getBlock() instanceof BlockFalling)
-									placeTmpBlock(ws, pos, bs);
-							}
-						}
-					}
-					
-					if(!down && placeTmpBlocks > 0)
-					{
-						pos = new BlockPos(x, y, z).down();
-						if(ws.isAirBlock(pos))
-							placeTmpBlock(ws, pos, Blocks.AIR.getDefaultState());
-					}
-				}
-				
-				metaData.add(new TeleportMetadata(entity, dimension, ws, x, y, z));
-			}
-		}
 		for(TeleportMetadata meta: metaData)
 			this.teleport(meta);
 		metaData.clear();
@@ -417,7 +429,7 @@ public class V10verlap {
 			server.getPlayerList().transferPlayerToDimension((EntityPlayerMP)meta.entity, meta.to.provider.getDimension(), new V10verlapTeleporter(meta));
 		else
 		{
-			meta.from.getEntityTracker().untrack(meta.entity);
+			((WorldServer)meta.from).getEntityTracker().untrack(meta.entity);
 			meta.from.removeEntityDangerously(meta.entity);
 		    
 			meta.entity.isDead = false;
@@ -438,11 +450,12 @@ public class V10verlap {
 	class TeleportMetadata
 	{
 		private final Entity entity;
-		private final WorldServer from;
+		private final World from;
 		final WorldServer to;
-		final double x, y, z;
+		final double x, z;
+		final int y;
 		
-		private TeleportMetadata(Entity entity, WorldServer from, WorldServer to, double x, double y, double z)
+		private TeleportMetadata(Entity entity, World from, WorldServer to, double x, int y, double z)
 		{
 			this.entity = entity;
 			this.from = from;
