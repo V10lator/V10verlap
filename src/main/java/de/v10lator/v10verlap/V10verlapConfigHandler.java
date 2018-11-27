@@ -152,6 +152,8 @@ public class V10verlapConfigHandler extends Thread {
 		}
 		if(config.hasChanged())
 			config.save();
+		mod.lowerCache.clear();
+		mod.upperCache.clear();
 		releaseLock();
 	}
 	

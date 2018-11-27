@@ -83,7 +83,7 @@ public class V10verlapCommand extends CommandBase {
 		sender.sendMessage(makeMessage(TextFormatting.GREEN, "Set " + key + " to " + nv + "!"));
 	}
 	
-	private void link(MinecraftServer server, ICommandSender sender, String[] args)
+	private void link(ICommandSender sender, String[] args)
 	{
 		if(args.length != 5)
 		{
@@ -100,7 +100,7 @@ public class V10verlapCommand extends CommandBase {
 			sender.sendMessage(makeMessage(TextFormatting.RED, "Invalid dimension: " + args[1]));
 			return;
 		}
-		if(server.getWorld(dimA) == null)
+		if(mod.server.getWorld(dimA) == null)
 		{
 			sender.sendMessage(makeMessage(TextFormatting.RED, "Invalid dimension: " + args[1]));
 			return;
@@ -115,7 +115,7 @@ public class V10verlapCommand extends CommandBase {
 			sender.sendMessage(makeMessage(TextFormatting.RED, "Invalid dimension: " + args[2]));
 			return;
 		}
-		if(server.getWorld(dimB) == null)
+		if(mod.server.getWorld(dimB) == null)
 		{
 			sender.sendMessage(makeMessage(TextFormatting.RED, "Invalid dimension: " + args[2]));
 			return;
@@ -150,10 +150,12 @@ public class V10verlapCommand extends CommandBase {
 		config.get(args[1], "lower", args[2]).set(args[2]);
 		config.get(args[1], "minY", minY).set(minY);
 		mod.configManager.releaseLock();
+		mod.lowerCache.put(dimA, dimB);
+		mod.upperCache.put(dimB, dimA);
 		sender.sendMessage(makeMessage(TextFormatting.GREEN, "Dimensions linked!"));
 	}
 	
-	private void unlink(MinecraftServer server, ICommandSender sender, String[] args)
+	private void unlink(ICommandSender sender, String[] args)
 	{
 		if(args.length != 3)
 		{
@@ -210,6 +212,10 @@ public class V10verlapCommand extends CommandBase {
 		
 		mod.scaleCache.remove(dimA);
 		mod.scaleCache.remove(dimB);
+		mod.lowerCache.remove(dimA);
+		mod.lowerCache.remove(dimB);
+		mod.upperCache.remove(dimA);
+		mod.upperCache.remove(dimB);
 		
 		sender.sendMessage(makeMessage(TextFormatting.GREEN, "Dimensions unlinked!"));
 	}
@@ -242,7 +248,7 @@ public class V10verlapCommand extends CommandBase {
 		sender.sendMessage(makeMessage(TextFormatting.GREEN, nv == 0 ? "Disabled tmp block spawning!" : "Set tmp block live time to " + nv + " seconds!"));
 	}
 	
-	private void setScale(MinecraftServer server, ICommandSender sender, String[] args)
+	private void setScale(ICommandSender sender, String[] args)
 	{
 		String scales;
 		int dim;
@@ -268,7 +274,7 @@ public class V10verlapCommand extends CommandBase {
 				sender.sendMessage(makeMessage(TextFormatting.RED, "Invalid dimension: " + args[2]));
 				return;
 			}
-			if(server.getWorld(dim) == null)
+			if(mod.server.getWorld(dim) == null)
 			{
 				sender.sendMessage(makeMessage(TextFormatting.RED, "Invalid dimension: " + args[2]));
 				return;
@@ -306,10 +312,10 @@ public class V10verlapCommand extends CommandBase {
 		switch(args[0])
 		{
 			case "link":
-				link(server, sender, args);
+				link(sender, args);
 				break;
 			case "unlink":
-				unlink(server, sender, args);
+				unlink(sender, args);
 				break;
 			case "placetmpblocks":
 			case "ptb":
@@ -324,7 +330,7 @@ public class V10verlapCommand extends CommandBase {
 				changeBoolConf("relativeToSpawn", sender, args);
 				break;
 			case "scale":
-				setScale(server, sender, args);
+				setScale(sender, args);
 				break;
 			case "playeronly":
 			case "po":

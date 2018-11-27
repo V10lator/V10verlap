@@ -19,6 +19,8 @@
 package de.v10lator.v10verlap;
 
 import java.io.File;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -67,6 +69,7 @@ import net.minecraftforge.server.permission.PermissionAPI;
 public class V10verlap {
 	private final HashMap<V10verlapBlock, Integer> blocks = new HashMap<V10verlapBlock, Integer>();
 	private final String ENTITY_FALL_TAG = "##MODID##.noFallDamage";
+	private final String ENTITY_OLD_Y = "##MODID##.oldY";
 	boolean noFallDamage, relativeToSpawn, transformNetherScale = true, playerOnly;
 	int placeTmpBlocks;
 	final String permNode = "##MODID##.command";
@@ -75,6 +78,9 @@ public class V10verlap {
 	private File saveFile;
 	final HashMap<Integer, boolean[]> whitelist = new HashMap<Integer, boolean[]>();
 	public final HashMap<Integer, Double> scaleCache = new HashMap<Integer, Double>();
+	public final HashMap<Integer, Integer> lowerCache = new HashMap<Integer, Integer>();
+	public final HashMap<Integer, Integer> upperCache = new HashMap<Integer, Integer>();
+	public MinecraftServer server;
 	
 	@Mod.EventHandler
     public void onPreInit(FMLPreInitializationEvent event) {
@@ -88,6 +94,7 @@ public class V10verlap {
 			saveFile = null;
 			return;
 		}
+		server = event.getServer();
 		PermissionAPI.registerNode(permNode, DefaultPermissionLevel.OP, "Use the /v10verlap command");
 		configManager = new V10verlapConfigHandler(this, new Configuration(saveFile));
 		Hooks.init(this);
@@ -104,9 +111,8 @@ public class V10verlap {
 		if(ch.getEffectiveSide() != Side.SERVER)
 			return;
 		MinecraftForge.EVENT_BUS.unregister(this);
-		MinecraftServer ms = ch.getMinecraftServerInstance();
 		for(V10verlapBlock block: blocks.keySet())
-			resetBlock(ms, block);
+			resetBlock(block);
 		blocks.clear();
 		configManager.die();
 		configManager = null;
@@ -152,7 +158,6 @@ public class V10verlap {
 		if(event.phase == TickEvent.Phase.START)
 			return;
 		
-		MinecraftServer ms = FMLCommonHandler.instance().getMinecraftServerInstance();
 		if(!blocks.isEmpty())
 		{
 			Entry<V10verlapBlock, Integer> entry;
@@ -163,7 +168,7 @@ public class V10verlap {
 				c = entry.getValue() - 1;
 				if(c < 0)
 				{
-					resetBlock(ms, entry.getKey());
+					resetBlock(entry.getKey());
 					iter.remove();
 				}
 				else
@@ -172,8 +177,9 @@ public class V10verlap {
 		}
 		
 		int worldId, lower = 0, upper = 0, to, minY = 0, maxY = 0;
-		BlockPos pos, oldWorldSpawnPos, newWorldSpawnPos = null;
+		BlockPos pos, oldWorldSpawnPos = null, newWorldSpawnPos = null;
 		double x, y, z, oldScale, newScale;
+		BigDecimal scaledY;
 		boolean down, lowerAvail, upperAvail;
 		NBTTagCompound data;
 		for(WorldServer dimension: DimensionManager.getWorlds())
@@ -200,7 +206,8 @@ public class V10verlap {
 				upperAvail = false;
 			}
 			
-			oldWorldSpawnPos = dimension.getSpawnPoint();
+			if(relativeToSpawn)
+				oldWorldSpawnPos = dimension.getSpawnPoint();
 			oldScale = Hooks.getScale(worldId);
 			for(Entity entity: playerOnly ? dimension.playerEntities : dimension.loadedEntityList)
 			{
@@ -217,6 +224,11 @@ public class V10verlap {
 					continue;
 				
 				y = entity.posY;
+				scaledY = new BigDecimal(y).setScale(1, RoundingMode.HALF_UP);
+				if(data.hasKey(ENTITY_OLD_Y) && new BigDecimal(data.getDouble(ENTITY_OLD_Y)).equals(scaledY))
+					continue;
+				data.setDouble(ENTITY_OLD_Y, scaledY.doubleValue());
+				
 				if(lowerAvail && y <= minY)
 				{
 					try
@@ -256,7 +268,7 @@ public class V10verlap {
 					continue;
 				}
 				
-				WorldServer ws = ms.getWorld(to);
+				WorldServer ws = server.getWorld(to);
 				if(ws == null)
 				{
 					LogManager.getLogger("##NAME##").info("Can't load DIM" + to);
@@ -325,7 +337,7 @@ public class V10verlap {
 			}
 		}
 		for(TeleportMetadata meta: metaData)
-			this.teleport(meta, ms);
+			this.teleport(meta);
 		metaData.clear();
 	}
 	
@@ -376,18 +388,18 @@ public class V10verlap {
 		return false;
 	}
 	
-	private void resetBlock(MinecraftServer ms, V10verlapBlock block)
+	private void resetBlock(V10verlapBlock block)
 	{
-		WorldServer ws = ms.getWorld(block.dim);
+		WorldServer ws = server.getWorld(block.dim);
 		if(ws.getBlockState(block.pos).getMaterial() == Material.GLASS)
 			ws.setBlockState(block.pos, block.oldState);
 	}
 	
-	private void teleport(TeleportMetadata meta, MinecraftServer ms)
+	private void teleport(TeleportMetadata meta)
 	{
 		if(playerOnly)
 		{
-			ms.getPlayerList().transferPlayerToDimension((EntityPlayerMP)meta.entity, meta.to.provider.getDimension(), new V10verlapTeleporter(meta));
+			server.getPlayerList().transferPlayerToDimension((EntityPlayerMP)meta.entity, meta.to.provider.getDimension(), new V10verlapTeleporter(meta));
 			return;
 		}
 		
@@ -397,12 +409,12 @@ public class V10verlap {
 			for(Entity passenger: passengers)
 			{
 				passenger.dismountRidingEntity();
-				teleport(new TeleportMetadata(passenger, meta.from, meta.to, meta.x, meta.y, meta.z), ms);
+				teleport(new TeleportMetadata(passenger, meta.from, meta.to, meta.x, meta.y, meta.z));
 			}
 		}
 		
 		if(meta.entity instanceof EntityPlayerMP)
-			ms.getPlayerList().transferPlayerToDimension((EntityPlayerMP)meta.entity, meta.to.provider.getDimension(), new V10verlapTeleporter(meta));
+			server.getPlayerList().transferPlayerToDimension((EntityPlayerMP)meta.entity, meta.to.provider.getDimension(), new V10verlapTeleporter(meta));
 		else
 		{
 			meta.from.getEntityTracker().untrack(meta.entity);
