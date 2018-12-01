@@ -218,7 +218,7 @@ public class Hooks
 	 * @param world - The world id
 	 * @return World - The scale
 	 */
-	public static double getScale(int world) throws NotLinkedException
+	public static int getScale(int world) throws NotLinkedException
 	{
 		if(plugin.scaleCache.containsKey(world))
 			return plugin.scaleCache.get(world);
@@ -230,7 +230,7 @@ public class Hooks
 			plugin.configManager.releaseLock();
 			throw Hooks.nle;
 		}
-		double ret = config.get(worldName, "scale", 1.0D).getDouble();
+		int ret = config.get(worldName, "scale", 1).getInt();
 		plugin.configManager.releaseLock();
 		plugin.scaleCache.put(world, ret);
 		return ret;

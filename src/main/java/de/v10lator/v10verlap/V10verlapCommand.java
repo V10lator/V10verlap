@@ -286,10 +286,10 @@ public class V10verlapCommand extends CommandBase {
 				return;
 			}
 		}
-		double scale;
+		int scale;
 		try
 		{
-			scale = Double.parseDouble(scales);
+			scale = Integer.parseInt(scales);
 		}
 		catch(NumberFormatException e)
 		{
@@ -302,7 +302,7 @@ public class V10verlapCommand extends CommandBase {
 			return;
 		}
 		mod.scaleCache.put(dim, scale);
-		mod.configManager.getLockedConfig().get(Integer.toString(dim), "scale", 1.0D).set(scale);
+		mod.configManager.getLockedConfig().get(Integer.toString(dim), "scale", 1).set(scale);
 		mod.configManager.releaseLock();
 		sender.sendMessage(makeMessage(TextFormatting.GREEN, "New scale for DIM" + Integer.toString(dim) + ": " + Double.toString(scale)));
 	}

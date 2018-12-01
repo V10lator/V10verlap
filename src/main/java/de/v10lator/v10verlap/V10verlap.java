@@ -77,7 +77,7 @@ public class V10verlap {
 	private final ArrayList<TeleportMetadata> metaData = new ArrayList<TeleportMetadata>();
 	private File saveFile;
 	final HashMap<Integer, boolean[]> whitelist = new HashMap<Integer, boolean[]>();
-	public final HashMap<Integer, Double> scaleCache = new HashMap<Integer, Double>();
+	public final HashMap<Integer, Integer> scaleCache = new HashMap<Integer, Integer>();
 	public final HashMap<Integer, Integer> lowerCache = new HashMap<Integer, Integer>();
 	public final HashMap<Integer, Integer> upperCache = new HashMap<Integer, Integer>();
 	public final HashMap<Integer, Integer> minCache = new HashMap<Integer, Integer>();
@@ -131,7 +131,7 @@ public class V10verlap {
 		config.get(world, "lower", id == 0 ? "-1" : id == 1 ? "0" : "none");
 		config.get(world, "minY", 0);
 		config.get(world, "maxY", dimension.getHeight());
-		config.get(world, "scale", transformNetherScale && dimension.provider.getDimensionType() == DimensionType.NETHER ? 8.0D : 1.0D);
+		config.get(world, "scale", transformNetherScale && dimension.provider.getDimensionType() == DimensionType.NETHER ? 8 : 1);
 		configManager.releaseLock();
 	}
 	
@@ -187,9 +187,9 @@ public class V10verlap {
 		}
 		
 		BlockPos oldWorldSpawnPos = relativeToSpawn ? event.world.getSpawnPoint() : null;
-		double oldScale = Hooks.getScale(worldId);
-		int to, blockY, oldY;
-		double x, z, newScale;
+		int oldScale = Hooks.getScale(worldId);
+		int to, blockY, oldY, ix, iz, newScale;
+		double x, z;
 		BlockPos pos, newWorldSpawnPos = null;
 		NBTTagCompound data;
 		
@@ -279,10 +279,58 @@ public class V10verlap {
 			newScale = Hooks.getScale(to);
 			if(oldScale != newScale)
 			{
-				x *= oldScale;
-				z *= oldScale;
-				x /= newScale;
-				z /= newScale;
+				ix = (int)x;
+				iz = (int)z;
+				x = x % 1;
+				z = z % 1;
+				
+				switch(oldScale)
+				{
+				case 0:
+				case 1:
+					break;
+				case 8:
+					ix = ix << 3;
+					iz = iz << 3;
+					break;
+				case 2:
+					ix = ix << 1;
+					iz = iz << 1;
+					break;
+				case 4:
+					ix = ix << 2;
+					iz = iz << 2;
+					break;
+				case 16:
+					ix = ix << 4;
+					iz = iz << 4;
+					break;
+				default:
+					ix *= oldScale;
+					iz *= oldScale;
+				}
+				
+				if(newScale > 1)
+				{
+					double t = ((double)ix) / newScale;
+					ix = (int)t;
+					t = t % 1;
+					if(t > 0.5D)
+						ix++;
+					else if(t < -0.5D)
+						ix--;
+					
+					t = ((double)iz) / newScale;
+					iz = (int)t;
+					t = t % 1;
+					if(t > 0.5D)
+						iz++;
+					else if(t < -0.5D)
+						iz--;
+				}
+				
+				x += ix;
+				z += iz;
 			}
 			
 			if(relativeToSpawn)
