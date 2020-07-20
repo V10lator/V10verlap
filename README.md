@@ -1,1 +1,2 @@
-https://minecraft.curseforge.com/projects/v10verlap
+THIS PROJECT IS ABANDONED!
+NO SUPPORT, NO BUGFIXES.
